@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pose Annotator</title>
+    <meta charset="UTF-8">
+    <meta name="author" content="Cristian Ortega Singer">
+    <script src="https://code.jquery.com/jquery-latest.js"></script>
+    <style>
+      div {border-style: dotted;}
+      body {display: grid;}
+      #header{
+        grid-column: 1/span 3;
+        grid-row: 1/ span 2;
+      }
+      #sidebar{
+        grid-column: 1;
+        grid-row: 2/span 7;
+      }
+      #workspace{
+        grid-column: 2/span 3;
+        grid-row: 2/span 5;
+      }
+
+      #footer{
+        grid-column: 1/span 3;
+        grid-row: 7;
+      }
+      .gridItem{display:grid;}
+    </style>
+  </head>
+  <body>
+    <div id="header" class="gridItem">
+      Pose Annotator
+      <form name="upload-metadata">
+        <input type="file" id="metadata" accept="application/json" multiple>
+        <button type="button" id="metaSubmit" onclick="handleMetaFiles();">Load Annotations</button>
+        </br>
+        <input type="file" id="images" accept="image/*" multiple>
+        <button type="button" id="imageSubmit" onclick="handleImageFiles();">Load Images</button>
+      </form>
+    </div>
+    <div id="main" class="gridItem">
+      <div id="sidebar" class="gridItem">
+        Here are going to be all the tools and an overview of the images
+        <div id="tools">Tools</div>
+        <div id="files">Files</div>
+        <div id="arrows">
+          <button type="button" id="lastPic" onclick="previousImage();">Prev</button>
+          <button type="button" id="nextPic" onclick="nextImage();">Next</button>
+        </div>
+      </div>
+      <div id="workspace" class="gridItem">
+        <svg>
+          <img id="image" href="" alt="current Picture">
+        </svg>
+      </div>
+    </div>
+    <div id="footer" class="gridItem">
+      Footer
+    </div>
+
+    <script type="text/javascript">
+    "use strict";
+      var IMG_FILEPATH = "img/";
+      var META_FILEPATH = "metadata/";
+      var meta_file_list = {};
+      var annotations;
+      var image_file_list = {};
+      var current_image_id;
+      var current_image_source;
+
+      // Check for the various File API support.
+      if (window.File && window.FileReader && window.FileList && window.Blob) {
+        // Great success! All the File APIs are supported.
+      } else {
+        alert('The File APIs are not fully supported in this browser.');
+      }
+
+      function handleMetaFiles(){
+        meta_file_list = document.getElementById("metadata").files;
+
+        if(!meta_file_list[0]){
+          alert("You have to select a file before you can continue!");
+        }else{
+          console.log(meta_file_list);
+          for(var i = 0; i < meta_file_list.length; i++){
+            var d = meta_file_list[i];
+            console.log(d);
+            var reader = new FileReader();
+            reader.onload = getAnnotations;
+            reader.readAsText(d);
+          }
+        }
+        function getAnnotations(t){
+          let lines = t.target.result;
+          var a = JSON.parse(lines);
+          annotations = $.extend(annotations,a);
+          console.log(annotations);
+        }
+
+        if(!image_file_list[0]){
+          alert("Select images in the file selector to continue")
+        }else{
+          current_image_id = image_file_list[0].name;
+          loadImage();
+        }
+      }
+
+      function handleImageFiles(){
+        image_file_list = document.getElementById("images").files;
+        if(!image_file_list[0]){
+          alert("You have to select a file before you can continue!");
+        }else{
+          console.log(image_file_list);
+        }
+
+        if(!meta_file_list[0]){
+          alert("Select a JSON file in the file selector to continue")
+        }else{
+          current_image_id = 0;
+          loadImage();
+        }
+      }
+
+      function loadImage(){
+        if(!image_file_list[current_image_id]){
+          console.log(current_image_id);
+          alert("An Error occured! No Image Id found.")
+        }else{
+          var imag = document.getElementById("image");
+          current_image_source = image_file_list[current_image_id].name;
+
+          if(imag.complete){
+            var new_image = new Image();
+            new_image.id = "image";
+            new_image.src = IMG_FILEPATH + current_image_source;
+            image.parentNode.insertBefore(new_image, imag);
+            image.parentNode.removeChild(imag);
+          }
+          loadAnnotations();
+        }
+      }
+
+      function nextImage(){
+        if(current_image_id >= image_file_list.length -1){
+          current_image_id = 0;
+        }else{
+          current_image_id++;
+        }
+        loadImage();
+      }
+
+      function previousImage(){
+        if(current_image_id <= 0){
+          current_image_id = image_file_list.length - 1;
+        }else{
+          current_image_id--;
+        }
+        loadImage();
+      }
+
+      function loadAnnotations(){
+        var results = [];
+        var anno_image_id;
+        for(var j=0; j < annotations["images"].length; j++){
+          if(annotations["images"][j]["file_name"] == current_image_source){
+            anno_image_id = annotations["images"][j]["id"];
+          }
+        }
+        console.log(anno_image_id);
+        if(anno_image_id){
+          for(var k= 0; k < annotations["annotations"].length; k++){
+            if(annotations["annotations"][k]["image_id"] == anno_image_id){
+              results.push(annotations["annotations"][k]);
+            }
+          }
+        }else{
+          console.log("image_id not found");
+        }
+        console.log(results);
+      }
+
+
+    </script>
+  </body>
+</html>
