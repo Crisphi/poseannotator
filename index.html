@@ -81,6 +81,18 @@
 
         if(!meta_file_list[0]){
           alert("You have to select a file before you can continue!");
+        }else if(annotations){
+          if(confirm("Annotations already included! Do you want to replace annotation File(s)?")){
+            annotations = {};
+            console.log(meta_file_list);
+            for(var i = 0; i < meta_file_list.length; i++){
+              var d = meta_file_list[i];
+              console.log(d);
+              var reader = new FileReader();
+              reader.onload = getAnnotations;
+              reader.readAsText(d);
+            }
+          }
         }else{
           console.log(meta_file_list);
           for(var i = 0; i < meta_file_list.length; i++){
@@ -95,13 +107,14 @@
           let lines = t.target.result;
           var a = JSON.parse(lines);
           annotations = $.extend(annotations,a);
+          console.log("Annotations:");
           console.log(annotations);
         }
 
         if(!image_file_list[0]){
           alert("Select images in the file selector to continue")
         }else{
-          current_image_id = image_file_list[0].name;
+          current_image_id = 0;
           loadImage();
         }
       }
@@ -115,7 +128,7 @@
         }
 
         if(!meta_file_list[0]){
-          alert("Select a JSON file in the file selector to continue")
+          alert("Select a JSON file in the file selector to continue");
         }else{
           current_image_id = 0;
           loadImage();
