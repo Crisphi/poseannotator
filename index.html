@@ -26,6 +26,26 @@
         grid-row: 7;
       }
       .gridItem{display:grid;}
+
+      #img-svg-wrap{
+        position: relative;
+        display: inline-block;
+      }
+
+      #image{
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+
+      #svg{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+
+      }
     </style>
   </head>
   <body>
@@ -50,9 +70,11 @@
         </div>
       </div>
       <div id="workspace" class="gridItem">
-        <svg>
-          <img id="image" href="" alt="current Picture">
-        </svg>
+        <div id="img-svg-wrap">
+          <img x= 0 y= 0 id="image" href="" alt="current Picture">
+          <svg id="svg" viewbox="0 0 1000 1000">
+          </svg>
+        </div>
       </div>
     </div>
     <div id="footer" class="gridItem">
@@ -70,9 +92,7 @@
       var current_image_source;
 
       // Check for the various File API support.
-      if (window.File && window.FileReader && window.FileList && window.Blob) {
-        // Great success! All the File APIs are supported.
-      } else {
+      if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
         alert('The File APIs are not fully supported in this browser.');
       }
 
@@ -142,13 +162,14 @@
         }else{
           var imag = document.getElementById("image");
           current_image_source = image_file_list[current_image_id].name;
+          var svg = document.getElementById("canvas");
 
           if(imag.complete){
             var new_image = new Image();
             new_image.id = "image";
             new_image.src = IMG_FILEPATH + current_image_source;
-            image.parentNode.insertBefore(new_image, imag);
-            image.parentNode.removeChild(imag);
+            imag.parentNode.insertBefore(new_image, imag);
+            imag.parentNode.removeChild(imag);
           }
           loadAnnotations();
         }
@@ -191,6 +212,32 @@
           console.log("image_id not found");
         }
         console.log(results);
+        if(results.length > 0){
+          displayAnnotations(results);
+        }
+      }
+
+      function displayAnnotations(r){
+        var points = [];
+        for(var i = 0; i < r.length; i++){
+          var rawPoints = r[i].keypoints;
+          console.log(rawPoints);
+          for(var j = 0; j < rawPoints.length; j++){
+            if((j+1) % 3 != 0){
+              points.push(rawPoints[j]);
+            }
+          }
+          console.log(points);
+          var strPoints = points.toString();
+          var imag = document.getElementById("image");
+          if(imag.complete){
+            var poly = new SVGPolylineElement();
+            poly.id = "annotation" + i;
+            poly.points = strPoints;
+            poly.parentNode.insertBefore(poly, imag);
+          }
+
+        }
       }
 
 
