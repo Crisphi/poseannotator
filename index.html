@@ -53,10 +53,9 @@
       Pose Annotator
       <form name="upload-metadata">
         <input type="file" id="metadata" accept="application/json" multiple>
-        <button type="button" id="metaSubmit" onclick="handleMetaFiles();">Load Annotations</button>
         </br>
         <input type="file" id="images" accept="image/*" multiple>
-        <button type="button" id="imageSubmit" onclick="handleImageFiles();">Load Images</button>
+        <button type="button" id="imageSubmit" onclick="handleFiles();">Load Files</button>
       </form>
     </div>
     <div id="main" class="gridItem">
@@ -96,32 +95,14 @@
         alert('The File APIs are not fully supported in this browser.');
       }
 
-      function handleMetaFiles(){
-        meta_file_list = document.getElementById("metadata").files;
-
-        if(!meta_file_list[0]){
-          alert("You have to select a file before you can continue!");
-        }else if(annotations){
-          if(confirm("Annotations already included! Do you want to replace annotation File(s)?")){
-            annotations = {};
-            console.log(meta_file_list);
-            for(var i = 0; i < meta_file_list.length; i++){
-              var d = meta_file_list[i];
-              console.log(d);
-              var reader = new FileReader();
-              reader.onload = getAnnotations;
-              reader.readAsText(d);
-            }
-          }
-        }else{
-          console.log(meta_file_list);
-          for(var i = 0; i < meta_file_list.length; i++){
-            var d = meta_file_list[i];
-            console.log(d);
-            var reader = new FileReader();
-            reader.onload = getAnnotations;
-            reader.readAsText(d);
-          }
+      function loadMetaFile(){
+        console.log(meta_file_list);
+        for(var i = 0; i < meta_file_list.length; i++){
+          var d = meta_file_list[i];
+          console.log(d);
+          var reader = new FileReader();
+          reader.onload = getAnnotations;
+          reader.readAsText(d);
         }
         function getAnnotations(t){
           let lines = t.target.result;
@@ -131,27 +112,67 @@
           console.log(annotations);
         }
 
-        if(!image_file_list[0]){
-          alert("Select images in the file selector to continue")
-        }else{
-          current_image_id = 0;
-          loadImage();
+        loadAnnotations();
+      }
+
+      function loadMetaFileSingle(){
+        console.log(meta_file_list);
+        var id = current_image_source.split(".")[0];
+        var patt = new RegExp(id + "_");
+        var meta_id;
+        console.log(id);
+        for(var i = 0; i < meta_file_list.length; i++){
+          var d = meta_file_list[i];
+          if(patt.test(d.name)){
+            console.log(d);
+            meta_id = d;
+          }
+        }
+        if(meta_id){
+          var reader = new FileReader();
+          reader.onload = getAnnotations;
+          console.log(meta_id);
+          reader.readAsText(meta_id);
+        }
+
+        function getAnnotations(t){
+          let lines = t.target.result;
+          var a = JSON.parse(lines);
+          annotations = $.extend(annotations,a);
+          console.log("Annotations:");
+          console.log(annotations);
         }
       }
 
-      function handleImageFiles(){
+      function handleFiles(){
         image_file_list = document.getElementById("images").files;
+        meta_file_list = document.getElementById("metadata").files;
         if(!image_file_list[0]){
-          alert("You have to select a file before you can continue!");
-        }else{
-          console.log(image_file_list);
-        }
-
-        if(!meta_file_list[0]){
-          alert("Select a JSON file in the file selector to continue");
-        }else{
-          current_image_id = 0;
-          loadImage();
+          alert("You have to select image files before you can continue!");
+        }else if(!meta_file_list[0]){
+          alert("You have to select JSON files before you can continue!");
+        }else if(image_file_list[0] && meta_file_list[0]){
+          if(annotations){
+            if(confirm("Annotations already included! Do you want to replace annotation File(s)?")){
+              current_image_id = 0;
+              loadImage();
+              annotations = {};
+              if(meta_file_list.length > 1){
+                loadMetaFileSingle();
+              }else{
+                loadMetaFile();
+              }
+            }
+          }else{
+            current_image_id = 0;
+            loadImage();
+            annotations = {};
+            if(meta_file_list.length > 1){
+              loadMetaFileSingle();
+            }else{
+              loadMetaFile();
+            }
+          }
         }
       }
 
@@ -171,7 +192,6 @@
             imag.parentNode.insertBefore(new_image, imag);
             imag.parentNode.removeChild(imag);
           }
-          loadAnnotations();
         }
       }
 
