@@ -25,6 +25,7 @@
         grid-column: 1/span 3;
         grid-row: 7;
       }
+
       .gridItem{display:grid;}
 
       #img-svg-wrap{
@@ -33,8 +34,9 @@
       }
 
       #image{
-        display: block;
+        display: absolute;
         max-width: 100%;
+        min-width: 100%;
         height: auto;
       }
 
@@ -71,7 +73,8 @@
       <div id="workspace" class="gridItem">
         <div id="img-svg-wrap">
           <img x= 0 y= 0 id="image" href="" alt="current Picture">
-          <svg id="svg" viewbox="0 0 1000 1000">
+          <svg id="svg">
+            <polyline id="polyl" style="fill:none;stroke:black;stroke-width:3" points="606.253, 219.699, 607.966, 243.867, 587.274, 243.883, 575.187, 280.014, 588.977, 264.551, 626.971, 243.854, 637.244, 278.34, 632.136, 297.325, 611.349, 311.086, 597.578, 311.151, 601.005, 357.737, 604.533, 404.276, 623.486, 309.444, 626.952, 352.629, 628.599, 400.847, 601.088, 216.209, 611.397, 214.536, 599.217, 223.13,  614.927, 217.92, 628.695, 409.502, 637.276, 407.778, 625.206, 406.001, 611.426, 411.236, 602.74, 409.529, 609.672, 406.07"/>
           </svg>
         </div>
       </div>
@@ -84,6 +87,7 @@
     "use strict";
       var IMG_FILEPATH = "img/";
       var META_FILEPATH = "metadata/";
+      var single_meta_file = false;
       var meta_file_list = {};
       var annotations;
       var image_file_list = {};
@@ -95,27 +99,31 @@
         alert('The File APIs are not fully supported in this browser.');
       }
 
-      function loadMetaFile(){
+      function loadMetaFileSingle(){
+        single_meta_file = true;
+
         console.log(meta_file_list);
         for(var i = 0; i < meta_file_list.length; i++){
           var d = meta_file_list[i];
           console.log(d);
           var reader = new FileReader();
           reader.onload = getAnnotations;
-          reader.readAsText(d);
+          reader.readAsText(d).then(loadAnnotationsSingle());
         }
-        function getAnnotations(t){
+        function getAnnotations(t, callback = function(){loadAnnotations();}){
           let lines = t.target.result;
           var a = JSON.parse(lines);
           annotations = $.extend(annotations,a);
           console.log("Annotations:");
           console.log(annotations);
+          callback();
         }
 
-        loadAnnotations();
       }
 
-      function loadMetaFileSingle(){
+      function loadMetaFiles(){
+        single_meta_file = false;
+
         console.log(meta_file_list);
         var id = current_image_source.split(".")[0];
         var patt = new RegExp(id + "_");
@@ -135,12 +143,14 @@
           reader.readAsText(meta_id);
         }
 
-        function getAnnotations(t){
+        function getAnnotations(t, callback = function(){loadAnnotations();}){
+          console.log(callback);
           let lines = t.target.result;
           var a = JSON.parse(lines);
           annotations = $.extend(annotations,a);
           console.log("Annotations:");
           console.log(annotations);
+          callback();
         }
       }
 
@@ -158,9 +168,9 @@
               loadImage();
               annotations = {};
               if(meta_file_list.length > 1){
-                loadMetaFileSingle();
+                loadMetaFiles();
               }else{
-                loadMetaFile();
+                loadMetaFileSingle();
               }
             }
           }else{
@@ -168,9 +178,10 @@
             loadImage();
             annotations = {};
             if(meta_file_list.length > 1){
-              loadMetaFileSingle();
+              loadMetaFiles();
+              loadAnnotations();
             }else{
-              loadMetaFile();
+              loadMetaFileSingle();
             }
           }
         }
@@ -213,7 +224,7 @@
         loadImage();
       }
 
-      function loadAnnotations(){
+      function loadAnnotationsSingle(){
         var results = [];
         var anno_image_id;
         for(var j=0; j < annotations["images"].length; j++){
@@ -234,6 +245,16 @@
         console.log(results);
         if(results.length > 0){
           displayAnnotations(results);
+        }
+      }
+
+      function loadAnnotations(){
+        var results = [];
+        var p = annotations["people"];
+        console.log(p);
+        for(var i = 0; i < p.length; i++){
+          var t = p[i]["pose_keypoints_2d"];
+          console.log(t);
         }
       }
 
