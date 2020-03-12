@@ -205,13 +205,13 @@
       }
 
       function loadImage(){
+        destroyPolylines();
         if(!image_file_list[current_image_id]){
           console.log(current_image_id);
           alert("An Error occured! No Image Id found.")
         }else{
           var imag = document.getElementById("image");
           current_image_source = image_file_list[current_image_id].name;
-          var svg = document.getElementById("canvas");
 
           if(imag.complete){
             var new_image = new Image();
@@ -230,6 +230,11 @@
           current_image_id++;
         }
         loadImage();
+        if(single_meta_file){
+          loadMetaFileSingle();
+        }else{
+          loadMetaFiles();
+        }
       }
 
       function previousImage(){
@@ -239,6 +244,11 @@
           current_image_id--;
         }
         loadImage();
+        if(single_meta_file){
+          loadMetaFileSingle();
+        }else{
+          loadMetaFiles();
+        }
       }
 
       function loadAnnotationsSingle(){
@@ -306,6 +316,18 @@
         console.log(bodyparts);
 
         for(var i = 0; i < bodyparts.length; i++){
+          for(var j = 0; j < bodyparts[i].length; j++){
+            console.log(bodyparts[i][j]);
+            if(bodyparts[i][j] == 0){
+              console.log("spliced!");
+              bodyparts[i].splice(j,1);
+              j--;
+            }
+          }
+          console.log(bodyparts[i]);
+        }
+        console.log(bodyparts);
+        for(var i = 0; i < bodyparts.length; i++){
           var strPoints = bodyparts[i].toString();
           createPolyline(strPoints);
         }
@@ -318,6 +340,12 @@
         document.getElementById("svg").appendChild(polyline);
       }
 
+      function destroyPolylines(){
+        var svg = document.getElementById("svg");
+        while (svg.firstChild) {
+          svg.removeChild(svg.lastChild);
+        }
+      }
 
       function displayAnnotationsSingle(r){
         var points = [];
