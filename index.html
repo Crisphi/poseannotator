@@ -47,7 +47,12 @@
         left: 0;
         width: 100%;
         height: 100%;
+      }
 
+      polyline{
+        fill:none;
+        stroke:black;
+        stroke-width:3;
       }
     </style>
   </head>
@@ -74,8 +79,18 @@
       <div id="workspace" class="gridItem">
         <div id="img-svg-wrap">
           <img x= 0 y= 0 id="image" href="" alt="current Picture">
-          <svg id="svg">
-            <polyline id="polyl" style="fill:none;stroke:black;stroke-width:3" points="606.253, 219.699, 607.966, 243.867, 587.274, 243.883, 575.187, 280.014, 588.977, 264.551, 626.971, 243.854, 637.244, 278.34, 632.136, 297.325, 611.349, 311.086, 597.578, 311.151, 601.005, 357.737, 604.533, 404.276, 623.486, 309.444, 626.952, 352.629, 628.599, 400.847, 601.088, 216.209, 611.397, 214.536, 599.217, 223.13,  614.927, 217.92, 628.695, 409.502, 637.276, 407.778, 625.206, 406.001, 611.426, 411.236, 602.74, 409.529, 609.672, 406.07"/>
+          <svg id="svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <!--<polyline id="polyl" style="fill:none;stroke:black;stroke-width:3" points="606.253, 219.699, 607.966, 243.867, 587.274, 243.883, 575.187, 280.014, 588.977, 264.551, 626.971, 243.854, 637.244, 278.34, 632.136, 297.325, 611.349, 311.086, 597.578, 311.151, 601.005, 357.737, 604.533, 404.276, 623.486, 309.444, 626.952, 352.629, 628.599, 400.847, 601.088, 216.209, 611.397, 214.536, 599.217, 223.13,  614.927, 217.92, 628.695, 409.502, 637.276, 407.778, 625.206, 406.001, 611.426, 411.236, 602.74, 409.529, 609.672, 406.07"/>-->
+            <polyline style="fill:none;stroke:black;stroke-width:3" points= "606.253, 219.699, 607.966, 243.867,587.274, 243.883, 575.187, 280.014, 588.977, 264.551"/>
+            <polyline style="fill:none;stroke:black;stroke-width:3" points="607.966, 243.867, 626.971, 243.854, 637.244, 278.34, 632.136, 297.325 "/>
+            <polyline style="fill:none;stroke:black;stroke-width:3" points="607.966, 243.867, 611.349, 311.086, 597.578, 311.151, 601.005, 357.737, 604.533, 404.276"/>
+            <polyline style="fill:none;stroke:black;stroke-width:3" points="611.349, 311.086, 623.486, 309.444, 626.952, 352.629, 628.599, 400.847"/>
+            <polyline style="fill:none;stroke:black;stroke-width:3" points="599.217, 223.13, 601.088, 216.209, 606.253, 219.699"/>
+            <polyline style="fill:none;stroke:black;stroke-width:3" points=" 606.253, 219.699, 611.397, 214.536, 614.927, 217.92"/>
+            <polyline style="fill:none;stroke:black;stroke-width:3" points="604.533, 404.276, 611.426, 411.236, 602.74, 409.529"/>
+            <polyline style="fill:none;stroke:black;stroke-width:3" points="604.533, 404.276, 609.672, 406.07"/>
+            <polyline style="fill:none;stroke:black;stroke-width:3" points="628.599, 400.847, 628.695, 409.502, 637.276, 407.778"/>
+            <polyline style="fill:none;stroke:black;stroke-width:3" points="628.599, 400.847, 625.206, 406.001"/>
           </svg>
         </div>
       </div>
@@ -94,6 +109,8 @@
       var image_file_list = {};
       var current_image_id;
       var current_image_source;
+
+      var svgNS = "http://www.w3.org/2000/svg";
 
       // Check for the various File API support.
       if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
@@ -180,7 +197,6 @@
             annotations = {};
             if(meta_file_list.length > 1){
               loadMetaFiles();
-              loadAnnotations();
             }else{
               loadMetaFileSingle();
             }
@@ -267,6 +283,7 @@
 
       function displayAnnotations(r){
         var points = [];
+
         for(var i = 0; i < r.length; i++){
           if((i+1) % 3 != 0){
             points.push(r[i]);
@@ -274,14 +291,31 @@
         }
         console.log("Points:");
         console.log(points);
-        var strPoints = points.toString();
-        var imag = document.getElementById("image");
-        if(imag.complete){
-          var poly = new SVGPolylineElement();
-          poly.id = "annotation" + i;
-          poly.points = strPoints;
-          poly.parentNode.insertBefore(poly, imag);
+
+        var head1 = [points[0],points[1],points[30],points[31],points[34],points[35]];
+        var head2 = [points[0],points[1],points[32],points[33],points[36],points[37]];
+        var spine = [points[0],points[1],points[2],points[3],points[16],points[17]];
+        var armL = [points[2],points[3],points[4],points[5],points[6],points[7],points[8],points[9]];
+        var armR = [points[2],points[3],points[10],points[11],points[12],points[13],points[14],points[15]];
+        var legL = [points[16],points[17],points[18],points[19],points[20],points[21],points[22],points[23],points[44],points[45], points[46],points[47]];
+        var legR = [points[16],points[17],points[24],points[25],points[26],points[27],points[28],points[29],points[38],points[39],points[40],points[41]];
+        var footL = [points[22],points[23],points[48],points[49]];
+        var footR = [points[28],points[29],points[42],points[43]];
+
+        var bodyparts = [head1, head2, spine, armL, armR, legL, legR, footL, footR];
+        console.log(bodyparts);
+
+        for(var i = 0; i < bodyparts.length; i++){
+          var strPoints = bodyparts[i].toString();
+          createPolyline(strPoints);
         }
+      }
+
+      function createPolyline(p){
+        var polyline = document.createElementNS(svgNS, "polyline");
+        polyline.setAttributeNS(null, "points", p);
+
+        document.getElementById("svg").appendChild(polyline);
       }
 
 
