@@ -51,8 +51,13 @@
 
       polyline{
         fill:none;
-        stroke:black;
         stroke-width:3;
+      }
+      .black{
+        stroke:black;
+      }
+      .orange{
+        stroke:orange;
       }
     </style>
   </head>
@@ -109,6 +114,7 @@
       var image_file_list = {};
       var current_image_id;
       var current_image_source;
+      var color = "black";
 
       var svgNS = "http://www.w3.org/2000/svg";
 
@@ -116,6 +122,21 @@
       if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
         alert('The File APIs are not fully supported in this browser.');
       }
+
+      document.addEventListener('keydown', function(event) {
+        if(event.keyCode == 37) {
+          console.log('Left was pressed');
+          previousImage();
+        }
+        else if(event.keyCode == 39) {
+          console.log('Right was pressed');
+          nextImage();
+        }
+        else if(event.keyCode == 40) {
+          console.log('Down was pressed');
+          changeAnnoColor();
+        }
+      });
 
       function loadMetaFileSingle(){
         single_meta_file = true;
@@ -336,6 +357,7 @@
       function createPolyline(p){
         var polyline = document.createElementNS(svgNS, "polyline");
         polyline.setAttributeNS(null, "points", p);
+        polyline.setAttributeNS(null, "class", color);
 
         document.getElementById("svg").appendChild(polyline);
       }
@@ -366,7 +388,18 @@
             poly.points = strPoints;
             poly.parentNode.insertBefore(poly, imag);
           }
+        }
+      }
 
+      function changeAnnoColor(){
+        var svg = document.getElementById("svg");
+        if(color == "black"){
+          color = "orange"
+        }else{
+          color ="black"
+        }
+        for(var i = 0; i < svg.childNodes.length; i++){
+          svg.childNodes[i].setAttributeNS(null, "class", color);
         }
       }
 
