@@ -84,7 +84,7 @@
       <div id="workspace" class="gridItem">
         <div id="img-svg-wrap">
           <img x= 0 y= 0 id="image" href="" alt="current Picture">
-          <svg id="svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+          <svg id="svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="draggable(evt)">
             <!--<polyline id="polyl" style="fill:none;stroke:black;stroke-width:3" points="606.253, 219.699, 607.966, 243.867, 587.274, 243.883, 575.187, 280.014, 588.977, 264.551, 626.971, 243.854, 637.244, 278.34, 632.136, 297.325, 611.349, 311.086, 597.578, 311.151, 601.005, 357.737, 604.533, 404.276, 623.486, 309.444, 626.952, 352.629, 628.599, 400.847, 601.088, 216.209, 611.397, 214.536, 599.217, 223.13,  614.927, 217.92, 628.695, 409.502, 637.276, 407.778, 625.206, 406.001, 611.426, 411.236, 602.74, 409.529, 609.672, 406.07"/>-->
             <polyline style="fill:none;stroke:black;stroke-width:3" points= "606.253, 219.699, 607.966, 243.867,587.274, 243.883, 575.187, 280.014, 588.977, 264.551"/>
             <polyline style="fill:none;stroke:black;stroke-width:3" points="607.966, 243.867, 626.971, 243.854, 637.244, 278.34, 632.136, 297.325 "/>
@@ -118,6 +118,19 @@
       var current_image_source;
       var color = "black";
 
+      var selectedElement;
+      var offset;
+      var transform;
+      var bbox;
+      var minX;
+      var minY;
+      var maxX;
+      var maxY;
+      var boundaryX1 = 0;
+      var boundaryY1 = 0;
+      var boundaryX2 = document.getElementById("svg").width;
+      var boundaryY2 = document.getElementById("svg").height;
+
       var svgNS = "http://www.w3.org/2000/svg";
 
       // Check for the various File API support.
@@ -125,7 +138,7 @@
         alert('The File APIs are not fully supported in this browser.');
       }
 
-      //various event listeners for tracking key navigation
+      //various event listeners for tracking key and mouse navigation
       document.addEventListener('keydown', function(event) {
         if(event.keyCode == 37) {
           console.log('Left was pressed');
@@ -141,16 +154,100 @@
         }
       });
 
+      function draggable(evt){
+        var svg = evt.target;
+
+        svg.addEventListener("mousedown", startDrag);
+        svg.addEventListener("mousemove", drag);
+        svg.addEventListener("mouseup", endDrag);
+        svg.addEventListener("mouseleave", endDrag);
+
+        function getMousePos(evt){
+          var ctm = svg.getScreenCTM();
+          if(evt.touches){
+            evt = evt.touches[0];
+          }
+          return{
+            x: (evt.clientX - ctm.e) / ctm.a,
+            y: (evt.clientY - ctm.f) / ctm.d
+          };
+        }
+
+        function startDrag(evt){
+          var svgtemp = document.getElementById("svg");
+          boundaryX2 = svgtemp.width.baseVal.value;
+          boundaryY2 = svgtemp.height.baseVal.value;
+
+          console.log("Boundaries:");
+          console.log(boundaryX2);
+          console.log(boundaryY2);
+
+          if(evt.target.classList.contains("black")){
+            selectedElement = evt.target;
+            offset = getMousePos(evt);
+            console.log(offset);
+
+            var transforms = selectedElement.transform.baseVal;
+
+            if(transforms.length === 0 || transforms.getItem(0).type !== SVGTransform.SVG_TRANSFORM_TRANSLATE){
+              var translate = svg.createSVGTransform();
+              translate.setTranslate(0,0);
+              selectedElement.transform.baseVal.insertItemBefore(translate,0);
+            }
+
+            transform = transforms.getItem(0);
+            offset.x -= transform.matrix.e;
+            offset.y -= transform.matrix.f;
+
+            console.log(offset.x);
+            console.log(offset.y);
+
+            bbox = selectedElement.getBBox();
+            minX = boundaryX1 - bbox.x;
+            maxX = boundaryX2 -bbox.x - bbox.width;
+            minY = boundaryY1 - bbox.y;
+            maxY = boundaryY2 - bbox.y - bbox.height;
+          }
+        }
+
+        function drag(evt){
+          if(selectedElement){
+            evt.preventDefault();
+            var coord = getMousePos(evt);
+            var dx = coord.x - offset.x;
+            var dy = coord.y - offset.y;
+
+            if(dx < minX){
+              dx = minX;
+            }else if(dx >maxX){
+              dx = maxX;
+            }
+
+            if(dy < minY){
+              dy = minY;
+            }else if(dy > maxY){
+              dy = maxY;
+            }
+
+            transform.setTranslate(dx, dy);
+          }
+        }
+
+        function endDrag (evt){
+          selectedElement = false;
+        }
+      }
+
       //load json file if the annotations are saved in only one json file
       function loadMetaFileSingle(){
         single_meta_file = true;
 
-        console.log(meta_file_list);
+        //console.log(meta_file_list);
 
         //for every selected file launch a file reader to get content of file as a string array
         for(var i = 0; i < meta_file_list.length; i++){
           var d = meta_file_list[i];
-          console.log(d);
+          //console.log(d);
           //create file reader
           var reader = new FileReader();
           //assign file reader with function
@@ -164,8 +261,8 @@
           var a = JSON.parse(lines);
           //add annotations of file to annotation array
           annotations = $.extend(annotations,a);
-          console.log("Annotations:");
-          console.log(annotations);
+          //console.log("Annotations:");
+          //console.log(annotations);
           callback();
         }
 
@@ -175,19 +272,19 @@
       function loadMetaFiles(){
         single_meta_file = false;
 
-        console.log(meta_file_list);
+        //console.log(meta_file_list);
 
         //get name of json file through the name of the image file
         var id = current_image_source.split(".")[0];
         //create a new regex pattern
         var patt = new RegExp(id + "_");
         var meta_id;
-        console.log(id);
+        //console.log(id);
         //search in loaded meta files for the correct file via file name and save file in meta_id
         for(var i = 0; i < meta_file_list.length; i++){
           var d = meta_file_list[i];
           if(patt.test(d.name)){
-            console.log(d);
+            //console.log(d);
             meta_id = d;
           }
         }
@@ -196,17 +293,17 @@
         if(meta_id){
           var reader = new FileReader();
           reader.onload = getAnnotations;
-          console.log(meta_id);
+          //console.log(meta_id);
           reader.readAsText(meta_id);
         }
 
         function getAnnotations(t, callback = function(){loadAnnotations();}){
-          console.log(callback);
+          //console.log(callback);
           let lines = t.target.result;
           var a = JSON.parse(lines);
           annotations = $.extend(annotations,a);
-          console.log("Annotations:");
-          console.log(annotations);
+          //console.log("Annotations:");
+          //console.log(annotations);
           callback();
         }
       }
@@ -252,7 +349,7 @@
       function loadImage(){
         destroyPolylines();
         if(!image_file_list[current_image_id]){
-          console.log(current_image_id);
+          //console.log(current_image_id);
           alert("An Error occured! No Image Id found.")
         }else{
           var imag = document.getElementById("image");
@@ -309,7 +406,7 @@
             anno_image_id = annotations["images"][j]["id"];
           }
         }
-        console.log(anno_image_id);
+        //console.log(anno_image_id);
 
         //if found save annotations for specific picture in results
         if(anno_image_id){
@@ -321,7 +418,7 @@
         }else{
           console.log("image_id not found");
         }
-        console.log(results);
+        //console.log(results);
         /**if(results.length > 0){
           displayAnnotations(results);
         }**/
@@ -331,15 +428,15 @@
       function loadAnnotations(){
         var results = [];
         var p = annotations["people"];
-        console.log(p);
+        //console.log(p);
         //save pose keypoints in results
         for(var i = 0; i < p.length; i++){
           var t = p[i]["pose_keypoints_2d"];
-          console.log(t);
+          //console.log(t);
           results.push(t);
         }
-        console.log("Results:");
-        console.log(results);
+        //console.log("Results:");
+        //console.log(results);
         //start disply for each pose
         for(var j= 0; j < results.length; j++){
           displayAnnotations(results[j]);
@@ -356,8 +453,8 @@
             points.push(r[i]);
           }
         }
-        console.log("Points:");
-        console.log(points);
+        //console.log("Points:");
+        //console.log(points);
 
         //set point schema for display
         var head1 = [points[0],points[1],points[30],points[31],points[34],points[35]];
@@ -371,21 +468,21 @@
         var footR = [points[28],points[29],points[42],points[43]];
 
         var bodyparts = [head1, head2, spine, armL, armR, legL, legR, footL, footR];
-        console.log(bodyparts);
+        //console.log(bodyparts);
 
         //delete all points that have 0 value (if 0 bodypart is not assigned)
         for(var i = 0; i < bodyparts.length; i++){
           for(var j = 0; j < bodyparts[i].length; j++){
-            console.log(bodyparts[i][j]);
+            //console.log(bodyparts[i][j]);
             if(bodyparts[i][j] == 0){
-              console.log("spliced!");
+              //console.log("spliced!");
               bodyparts[i].splice(j,1);
               j--;
             }
           }
-          console.log(bodyparts[i]);
+          //console.log(bodyparts[i]);
         }
-        console.log(bodyparts);
+        //console.log(bodyparts);
 
         //stringify point arrays and start polyline creation
         for(var i = 0; i < bodyparts.length; i++){
@@ -416,13 +513,13 @@
         var points = [];
         for(var i = 0; i < r.length; i++){
           var rawPoints = r[i].keypoints;
-          console.log(rawPoints);
+          //console.log(rawPoints);
           for(var j = 0; j < rawPoints.length; j++){
             if((j+1) % 3 != 0){
               points.push(rawPoints[j]);
             }
           }
-          console.log(points);
+          //console.log(points);
 
           //stringify point arrays and start polyline creation
           var strPoints = points.toString();
