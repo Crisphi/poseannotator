@@ -106,6 +106,8 @@
 
     <script type="text/javascript">
     "use strict";
+
+    //initializing variables
       var IMG_FILEPATH = "img/";
       var META_FILEPATH = "metadata/";
       var single_meta_file = false;
@@ -123,6 +125,7 @@
         alert('The File APIs are not fully supported in this browser.');
       }
 
+      //various event listeners for tracking key navigation
       document.addEventListener('keydown', function(event) {
         if(event.keyCode == 37) {
           console.log('Left was pressed');
@@ -138,20 +141,28 @@
         }
       });
 
+      //load json file if the annotations are saved in only one json file
       function loadMetaFileSingle(){
         single_meta_file = true;
 
         console.log(meta_file_list);
+
+        //for every selected file launch a file reader to get content of file as a string array
         for(var i = 0; i < meta_file_list.length; i++){
           var d = meta_file_list[i];
           console.log(d);
+          //create file reader
           var reader = new FileReader();
+          //assign file reader with function
           reader.onload = getAnnotations;
+          //execute file reader, after that start loading annotations
           reader.readAsText(d).then(loadAnnotationsSingle());
         }
         function getAnnotations(t, callback = function(){loadAnnotations();}){
           let lines = t.target.result;
+          //parse result string as JSON
           var a = JSON.parse(lines);
+          //add annotations of file to annotation array
           annotations = $.extend(annotations,a);
           console.log("Annotations:");
           console.log(annotations);
@@ -160,14 +171,19 @@
 
       }
 
+      //load current json file if the annotations are saved in multiple json files
       function loadMetaFiles(){
         single_meta_file = false;
 
         console.log(meta_file_list);
+
+        //get name of json file through the name of the image file
         var id = current_image_source.split(".")[0];
+        //create a new regex pattern
         var patt = new RegExp(id + "_");
         var meta_id;
         console.log(id);
+        //search in loaded meta files for the correct file via file name and save file in meta_id
         for(var i = 0; i < meta_file_list.length; i++){
           var d = meta_file_list[i];
           if(patt.test(d.name)){
@@ -175,6 +191,8 @@
             meta_id = d;
           }
         }
+
+        //if file found launch a file reader to get content of file as a string array
         if(meta_id){
           var reader = new FileReader();
           reader.onload = getAnnotations;
@@ -193,9 +211,13 @@
         }
       }
 
+      //initiate the file reading process of json and image files
       function handleFiles(){
+        //get json and image files from the file selector
         image_file_list = document.getElementById("images").files;
         meta_file_list = document.getElementById("metadata").files;
+
+        //catching errors
         if(!image_file_list[0]){
           alert("You have to select image files before you can continue!");
         }else if(!meta_file_list[0]){
@@ -216,6 +238,7 @@
             current_image_id = 0;
             loadImage();
             annotations = {};
+            //check if there are multiple json files or just one
             if(meta_file_list.length > 1){
               loadMetaFiles();
             }else{
@@ -225,6 +248,7 @@
         }
       }
 
+      //display image
       function loadImage(){
         destroyPolylines();
         if(!image_file_list[current_image_id]){
@@ -244,6 +268,7 @@
         }
       }
 
+      //function for loading next image with annotations
       function nextImage(){
         if(current_image_id >= image_file_list.length -1){
           current_image_id = 0;
@@ -258,6 +283,7 @@
         }
       }
 
+      //function for loading previous image with annotations
       function previousImage(){
         if(current_image_id <= 0){
           current_image_id = image_file_list.length - 1;
@@ -272,15 +298,20 @@
         }
       }
 
+      // load annotations if there is only one json file
       function loadAnnotationsSingle(){
         var results = [];
         var anno_image_id;
+
+        //search for the current image id in annotations
         for(var j=0; j < annotations["images"].length; j++){
           if(annotations["images"][j]["file_name"] == current_image_source){
             anno_image_id = annotations["images"][j]["id"];
           }
         }
         console.log(anno_image_id);
+
+        //if found save annotations for specific picture in results
         if(anno_image_id){
           for(var k= 0; k < annotations["annotations"].length; k++){
             if(annotations["annotations"][k]["image_id"] == anno_image_id){
@@ -296,10 +327,12 @@
         }**/
       }
 
+      // load annotations if there are multiple json files
       function loadAnnotations(){
         var results = [];
         var p = annotations["people"];
         console.log(p);
+        //save pose keypoints in results
         for(var i = 0; i < p.length; i++){
           var t = p[i]["pose_keypoints_2d"];
           console.log(t);
@@ -307,14 +340,17 @@
         }
         console.log("Results:");
         console.log(results);
+        //start disply for each pose
         for(var j= 0; j < results.length; j++){
           displayAnnotations(results[j]);
         }
       }
 
+      //prepare pose keypoints for display as svg
       function displayAnnotations(r){
         var points = [];
 
+      //delete z variable (keypoint schema x,y,z with z = confidence level)
         for(var i = 0; i < r.length; i++){
           if((i+1) % 3 != 0){
             points.push(r[i]);
@@ -323,6 +359,7 @@
         console.log("Points:");
         console.log(points);
 
+        //set point schema for display
         var head1 = [points[0],points[1],points[30],points[31],points[34],points[35]];
         var head2 = [points[0],points[1],points[32],points[33],points[36],points[37]];
         var spine = [points[0],points[1],points[2],points[3],points[16],points[17]];
@@ -336,6 +373,7 @@
         var bodyparts = [head1, head2, spine, armL, armR, legL, legR, footL, footR];
         console.log(bodyparts);
 
+        //delete all points that have 0 value (if 0 bodypart is not assigned)
         for(var i = 0; i < bodyparts.length; i++){
           for(var j = 0; j < bodyparts[i].length; j++){
             console.log(bodyparts[i][j]);
@@ -348,12 +386,15 @@
           console.log(bodyparts[i]);
         }
         console.log(bodyparts);
+
+        //stringify point arrays and start polyline creation
         for(var i = 0; i < bodyparts.length; i++){
           var strPoints = bodyparts[i].toString();
           createPolyline(strPoints);
         }
       }
 
+      //create polyline with given points for display
       function createPolyline(p){
         var polyline = document.createElementNS(svgNS, "polyline");
         polyline.setAttributeNS(null, "points", p);
@@ -362,6 +403,7 @@
         document.getElementById("svg").appendChild(polyline);
       }
 
+      //destroy all displayed polylines
       function destroyPolylines(){
         var svg = document.getElementById("svg");
         while (svg.firstChild) {
@@ -369,6 +411,7 @@
         }
       }
 
+      //prepare pose keypoints for display as svg if only one json file is given
       function displayAnnotationsSingle(r){
         var points = [];
         for(var i = 0; i < r.length; i++){
@@ -380,6 +423,8 @@
             }
           }
           console.log(points);
+
+          //stringify point arrays and start polyline creation
           var strPoints = points.toString();
           var imag = document.getElementById("image");
           if(imag.complete){
@@ -391,6 +436,7 @@
         }
       }
 
+      //change css class of svg elements to change appearance for the current and following annotations
       function changeAnnoColor(){
         var svg = document.getElementById("svg");
         if(color == "black"){
