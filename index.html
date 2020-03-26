@@ -59,6 +59,10 @@
       .orange{
         stroke:orange;
       }
+
+      .point{
+
+      }
     </style>
   </head>
   <body>
@@ -182,7 +186,7 @@
           console.log(boundaryX2);
           console.log(boundaryY2);
 
-          if(evt.target.classList.contains("black")){
+          if(evt.target.classList.contains("point")){
             selectedElement = evt.target;
             offset = getMousePos(evt);
             console.log(offset);
@@ -347,7 +351,7 @@
 
       //display image
       function loadImage(){
-        destroyPolylines();
+        destroySvgEl();
         if(!image_file_list[current_image_id]){
           //console.log(current_image_id);
           alert("An Error occured! No Image Id found.")
@@ -453,22 +457,47 @@
             points.push(r[i]);
           }
         }
+
         //console.log("Points:");
         //console.log(points);
 
-        //set point schema for display
-        var head1 = [points[0],points[1],points[30],points[31],points[34],points[35]];
-        var head2 = [points[0],points[1],points[32],points[33],points[36],points[37]];
-        var spine = [points[0],points[1],points[2],points[3],points[16],points[17]];
-        var armL = [points[2],points[3],points[4],points[5],points[6],points[7],points[8],points[9]];
-        var armR = [points[2],points[3],points[10],points[11],points[12],points[13],points[14],points[15]];
-        var legL = [points[16],points[17],points[18],points[19],points[20],points[21],points[22],points[23],points[44],points[45], points[46],points[47]];
-        var legR = [points[16],points[17],points[24],points[25],points[26],points[27],points[28],points[29],points[38],points[39],points[40],points[41]];
-        var footL = [points[22],points[23],points[48],points[49]];
-        var footR = [points[28],points[29],points[42],points[43]];
+        var newpoints = {};
+        for(var i = 0; i < points.length; i += 2){
+          if((points[i] != 0)&&(points[i+1] != 0)){
+            var id = i/2;
+            newpoints[id] = [points[i], points[i+1]];
+          }
+        }
+        console.log(newpoints);
 
-        var bodyparts = [head1, head2, spine, armL, armR, legL, legR, footL, footR];
-        //console.log(bodyparts);
+        //set point schema for display
+
+        var head1 = [newpoints[0], newpoints[15]];
+        var head2 = [newpoints[0], newpoints[16]];
+        var head3 = [newpoints[15], newpoints[17]];
+        var head4 = [newpoints[16], newpoints[18]];
+        var spine1 = [newpoints[0], newpoints[1]];
+        var spine2 = [newpoints[1], newpoints[8]];
+        var armL1 = [newpoints[1], newpoints[2]];
+        var armL2 = [newpoints[2], newpoints[3]];
+        var armL3 = [newpoints[3], newpoints[4]];
+        var armR1 = [newpoints[1], newpoints[5]];
+        var armR2 = [newpoints[5], newpoints[6]];
+        var armR3 = [newpoints[6], newpoints[7]];
+        var legL1 = [newpoints[8], newpoints[9]];
+        var legL2 = [newpoints[9], newpoints[10]];
+        var legL3 = [newpoints[10], newpoints[11]];
+        var legR1 = [newpoints[8], newpoints[12]];
+        var legR2 = [newpoints[12], newpoints[13]];
+        var legR3 = [newpoints[13], newpoints[14]];
+        var footL1 = [newpoints[11], newpoints[22]];
+        var footL2 = [newpoints[22], newpoints[23]];
+        var footL3 = [newpoints[11], newpoints[24]];
+        var footR1 = [newpoints[14], newpoints[19]];
+        var footR2 = [newpoints[19], newpoints[20]];
+        var footR3 = [newpoints[14], newpoints[21]];
+
+        var bodyparts = [head1, head2, head3, head4, spine1, spine2, armL1, armL2, armL3, armR1, armR2, armR3, legL1, legL2, legL3, legR1, legR2, legR3, footL1, footL2, footL3, footR1, footR2, footR3];
 
         //delete all points that have 0 value (if 0 bodypart is not assigned)
         for(var i = 0; i < bodyparts.length; i++){
@@ -489,6 +518,27 @@
           var strPoints = bodyparts[i].toString();
           createPolyline(strPoints);
         }
+
+        for(var id in newpoints){
+          var x = newpoints[id][0];
+          var y = newpoints[id][1];
+          var strx = x.toString();
+          var stry = y.toString();
+          console.log(strx + " " + stry);
+          createPoint(strx, stry, id);
+        }
+      }
+
+      function createPoint(x, y, id){
+        var point = document.createElementNS(svgNS, "circle");
+        var classes = color + " point";
+        point.setAttributeNS(null,"cx", x);
+        point.setAttributeNS(null, "cy", y);
+        point.setAttributeNS(null, "r", "5");
+        point.setAttributeNS(null, "class", classes);
+        point.setAttributeNS(null,"id", id.toString());
+
+        document.getElementById("svg").appendChild(point);
       }
 
       //create polyline with given points for display
@@ -501,7 +551,7 @@
       }
 
       //destroy all displayed polylines
-      function destroyPolylines(){
+      function destroySvgEl(){
         var svg = document.getElementById("svg");
         while (svg.firstChild) {
           svg.removeChild(svg.lastChild);
