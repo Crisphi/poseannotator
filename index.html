@@ -49,7 +49,7 @@
         height: 100%;
       }
 
-      polyline{
+      line{
         fill:none;
         stroke-width:3;
       }
@@ -89,17 +89,7 @@
         <div id="img-svg-wrap">
           <img x= 0 y= 0 id="image" href="" alt="current Picture">
           <svg id="svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="draggable(evt)">
-            <!--<polyline id="polyl" style="fill:none;stroke:black;stroke-width:3" points="606.253, 219.699, 607.966, 243.867, 587.274, 243.883, 575.187, 280.014, 588.977, 264.551, 626.971, 243.854, 637.244, 278.34, 632.136, 297.325, 611.349, 311.086, 597.578, 311.151, 601.005, 357.737, 604.533, 404.276, 623.486, 309.444, 626.952, 352.629, 628.599, 400.847, 601.088, 216.209, 611.397, 214.536, 599.217, 223.13,  614.927, 217.92, 628.695, 409.502, 637.276, 407.778, 625.206, 406.001, 611.426, 411.236, 602.74, 409.529, 609.672, 406.07"/>-->
-            <polyline style="fill:none;stroke:black;stroke-width:3" points= "606.253, 219.699, 607.966, 243.867,587.274, 243.883, 575.187, 280.014, 588.977, 264.551"/>
-            <polyline style="fill:none;stroke:black;stroke-width:3" points="607.966, 243.867, 626.971, 243.854, 637.244, 278.34, 632.136, 297.325 "/>
-            <polyline style="fill:none;stroke:black;stroke-width:3" points="607.966, 243.867, 611.349, 311.086, 597.578, 311.151, 601.005, 357.737, 604.533, 404.276"/>
-            <polyline style="fill:none;stroke:black;stroke-width:3" points="611.349, 311.086, 623.486, 309.444, 626.952, 352.629, 628.599, 400.847"/>
-            <polyline style="fill:none;stroke:black;stroke-width:3" points="599.217, 223.13, 601.088, 216.209, 606.253, 219.699"/>
-            <polyline style="fill:none;stroke:black;stroke-width:3" points=" 606.253, 219.699, 611.397, 214.536, 614.927, 217.92"/>
-            <polyline style="fill:none;stroke:black;stroke-width:3" points="604.533, 404.276, 611.426, 411.236, 602.74, 409.529"/>
-            <polyline style="fill:none;stroke:black;stroke-width:3" points="604.533, 404.276, 609.672, 406.07"/>
-            <polyline style="fill:none;stroke:black;stroke-width:3" points="628.599, 400.847, 628.695, 409.502, 637.276, 407.778"/>
-            <polyline style="fill:none;stroke:black;stroke-width:3" points="628.599, 400.847, 625.206, 406.001"/>
+
           </svg>
         </div>
       </div>
@@ -121,6 +111,35 @@
       var current_image_id;
       var current_image_source;
       var color = "black";
+
+      var bodyparts = {};
+
+      var bodyschema = {
+        "head1" : [0, 15],
+        "head2" : [0, 16],
+        "head3" : [15, 17],
+        "head4" : [16, 18],
+        "spine1": [0, 1],
+        "spine2": [1, 8],
+        "armL1" : [1, 2],
+        "armL2" : [2, 3],
+        "armL3" : [3, 4],
+        "armR1" : [1, 5],
+        "armR2" : [5, 6],
+        "armR3" : [6, 7],
+        "legL1" : [8, 9],
+        "legL2" : [9, 10],
+        "legL3" : [10, 11],
+        "legR1" : [8, 12],
+        "legR2" : [12, 13],
+        "legR3" : [13, 14],
+        "footL1": [11, 22],
+        "footL2": [22, 23],
+        "footL3": [11, 24],
+        "footR1": [14, 19],
+        "footR2": [19, 20],
+        "footR3": [14, 21]
+      };
 
       var selectedElement;
       var offset;
@@ -158,14 +177,17 @@
         }
       });
 
+      //function for making the annotation points draggable
       function draggable(evt){
         var svg = evt.target;
 
+        //set event listeners for mouse movement
         svg.addEventListener("mousedown", startDrag);
         svg.addEventListener("mousemove", drag);
         svg.addEventListener("mouseup", endDrag);
         svg.addEventListener("mouseleave", endDrag);
 
+        //track mouseposition on screen if mouse interacts with svg
         function getMousePos(evt){
           var ctm = svg.getScreenCTM();
           if(evt.touches){
@@ -177,19 +199,23 @@
           };
         }
 
+        // handles mousedown event, starts dragging process
         function startDrag(evt){
           var svgtemp = document.getElementById("svg");
+
+          //set boundaries to Imagesize so that it is impossible to drag points out of view
           boundaryX2 = svgtemp.width.baseVal.value;
           boundaryY2 = svgtemp.height.baseVal.value;
 
-          console.log("Boundaries:");
+          /**console.log("Boundaries:");
           console.log(boundaryX2);
-          console.log(boundaryY2);
+          console.log(boundaryY2);**/
 
+          //correct mouse offset in relation to svg through a transformation
           if(evt.target.classList.contains("point")){
             selectedElement = evt.target;
             offset = getMousePos(evt);
-            console.log(offset);
+            //console.log(offset);
 
             var transforms = selectedElement.transform.baseVal;
 
@@ -203,9 +229,10 @@
             offset.x -= transform.matrix.e;
             offset.y -= transform.matrix.f;
 
-            console.log(offset.x);
-            console.log(offset.y);
+            //console.log(offset.x);
+            //console.log(offset.y);
 
+            //set boundaries according to the collision box of svg element
             bbox = selectedElement.getBBox();
             minX = boundaryX1 - bbox.x;
             maxX = boundaryX2 -bbox.x - bbox.width;
@@ -214,6 +241,7 @@
           }
         }
 
+        //handles mousemove event; the dragging process itself
         function drag(evt){
           if(selectedElement){
             evt.preventDefault();
@@ -221,6 +249,7 @@
             var dx = coord.x - offset.x;
             var dy = coord.y - offset.y;
 
+            //make shure svg element stays within boundaries
             if(dx < minX){
               dx = minX;
             }else if(dx >maxX){
@@ -232,19 +261,58 @@
             }else if(dy > maxY){
               dy = maxY;
             }
-
+            //set new position for svg point
             transform.setTranslate(dx, dy);
+
+            //set new position for svg lines if selected point is one of the coordinates
+            //get point id and bodyschema ids for identifing correct lines
+            var pointId = selectedElement.getAttribute("id");
+            var ids = pointId.split(" ");
+            var pointschemaId = ids[1];
+            var poseId = ids[0];
+            console.log("Pointschema Id: " + pointschemaId);
+            var lineIds = {};
+            //get all bodyparts that have the right identifier
+            for(var i in bodyschema){
+              for(var j = 0; j < bodyschema[i].length; j++){
+                if(bodyschema[i][j] == pointschemaId){
+                  lineIds[poseId + " " + i] = j;
+                }
+              }
+            }
+
+            for(var k in lineIds){
+              console.log(k);
+              var line = document.getElementById(k.toString());
+
+              if(line){
+                if(lineIds[k] == 0){
+                  line.setAttributeNS(null,"x1", coord.x);
+                  line.setAttributeNS(null,"y1", coord.y);
+                  console.log("changed x1 and y1");
+                }else if(lineIds[k] == 1){
+                  line.setAttributeNS(null,"x2", coord.x);
+                  line.setAttributeNS(null,"y2", coord.y);
+                  console.log("changed x2 and y2");
+                }else{
+                  console.log("An error occured. Look in source code function pointchange() to see what happened.");
+                }
+              }
+            }
           }
         }
 
+        //handles mouseup and mouseleave events; stops dragging process
         function endDrag (evt){
           selectedElement = false;
         }
       }
 
-      //load json file if the annotations are saved in only one json file
+
+
+        //Not finished will be included in future versions: load json file if the annotations are saved in only one json file
       function loadMetaFileSingle(){
-        single_meta_file = true;
+        /**single_meta_file = true;
 
         //console.log(meta_file_list);
 
@@ -268,7 +336,7 @@
           //console.log("Annotations:");
           //console.log(annotations);
           callback();
-        }
+        }**/
 
       }
 
@@ -443,12 +511,13 @@
         //console.log(results);
         //start disply for each pose
         for(var j= 0; j < results.length; j++){
-          displayAnnotations(results[j]);
+          displayAnnotations(results[j], j);
         }
       }
 
       //prepare pose keypoints for display as svg
-      function displayAnnotations(r){
+      function displayAnnotations(r, counter){
+        var counter = counter;
         var points = [];
 
       //delete z variable (keypoint schema x,y,z with z = confidence level)
@@ -463,60 +532,57 @@
 
         var newpoints = {};
         for(var i = 0; i < points.length; i += 2){
-          if((points[i] != 0)&&(points[i+1] != 0)){
             var id = i/2;
             newpoints[id] = [points[i], points[i+1]];
-          }
         }
-        console.log(newpoints);
+        //console.log(newpoints);
 
         //set point schema for display
-
-        var head1 = [newpoints[0], newpoints[15]];
-        var head2 = [newpoints[0], newpoints[16]];
-        var head3 = [newpoints[15], newpoints[17]];
-        var head4 = [newpoints[16], newpoints[18]];
-        var spine1 = [newpoints[0], newpoints[1]];
-        var spine2 = [newpoints[1], newpoints[8]];
-        var armL1 = [newpoints[1], newpoints[2]];
-        var armL2 = [newpoints[2], newpoints[3]];
-        var armL3 = [newpoints[3], newpoints[4]];
-        var armR1 = [newpoints[1], newpoints[5]];
-        var armR2 = [newpoints[5], newpoints[6]];
-        var armR3 = [newpoints[6], newpoints[7]];
-        var legL1 = [newpoints[8], newpoints[9]];
-        var legL2 = [newpoints[9], newpoints[10]];
-        var legL3 = [newpoints[10], newpoints[11]];
-        var legR1 = [newpoints[8], newpoints[12]];
-        var legR2 = [newpoints[12], newpoints[13]];
-        var legR3 = [newpoints[13], newpoints[14]];
-        var footL1 = [newpoints[11], newpoints[22]];
-        var footL2 = [newpoints[22], newpoints[23]];
-        var footL3 = [newpoints[11], newpoints[24]];
-        var footR1 = [newpoints[14], newpoints[19]];
-        var footR2 = [newpoints[19], newpoints[20]];
-        var footR3 = [newpoints[14], newpoints[21]];
-
-        var bodyparts = [head1, head2, head3, head4, spine1, spine2, armL1, armL2, armL3, armR1, armR2, armR3, legL1, legL2, legL3, legR1, legR2, legR3, footL1, footL2, footL3, footR1, footR2, footR3];
-
-        //delete all points that have 0 value (if 0 bodypart is not assigned)
-        for(var i = 0; i < bodyparts.length; i++){
-          for(var j = 0; j < bodyparts[i].length; j++){
-            //console.log(bodyparts[i][j]);
-            if(bodyparts[i][j] == 0){
-              //console.log("spliced!");
-              bodyparts[i].splice(j,1);
-              j--;
-            }
-          }
-          //console.log(bodyparts[i]);
+        bodyparts = {
+          head1 : [newpoints[0], newpoints[15]],
+          head2 : [newpoints[0], newpoints[16]],
+          head3 : [newpoints[15], newpoints[17]],
+          head4 : [newpoints[16], newpoints[18]],
+          spine1: [newpoints[0], newpoints[1]],
+          spine2: [newpoints[1], newpoints[8]],
+          armL1 : [newpoints[1], newpoints[2]],
+          armL2 : [newpoints[2], newpoints[3]],
+          armL3 : [newpoints[3], newpoints[4]],
+          armR1 : [newpoints[1], newpoints[5]],
+          armR2 : [newpoints[5], newpoints[6]],
+          armR3 : [newpoints[6], newpoints[7]],
+          legL1 : [newpoints[8], newpoints[9]],
+          legL2 : [newpoints[9], newpoints[10]],
+          legL3 : [newpoints[10], newpoints[11]],
+          legR1 : [newpoints[8], newpoints[12]],
+          legR2 : [newpoints[12], newpoints[13]],
+          legR3 : [newpoints[13], newpoints[14]],
+          footL1: [newpoints[11], newpoints[22]],
+          footL2: [newpoints[22], newpoints[23]],
+          footL3: [newpoints[11], newpoints[24]],
+          footR1: [newpoints[14], newpoints[19]],
+          footR2: [newpoints[19], newpoints[20]],
+          footR3: [newpoints[14], newpoints[21]]
         }
-        //console.log(bodyparts);
+        //delete all points that have 0 value (if 0 bodypart is not assigned)
+        for(var i in bodyparts){
+          //console.log("id: " + i);
+          if((bodyparts[i][0][0] == 0) || (bodyparts[i][1][1] == 0)){
+            delete bodyparts[i];
+          }
+        }
+        console.log(bodyparts);
 
-        //stringify point arrays and start polyline creation
-        for(var i = 0; i < bodyparts.length; i++){
-          var strPoints = bodyparts[i].toString();
-          createPolyline(strPoints);
+        //stringify point arrays and start line creation
+        for(var id in bodyparts){
+          if((bodyparts[id][0])&& (bodyparts[id][1])){
+            var x1 = bodyparts[id][0][0].toString();
+            var y1 = bodyparts[id][0][1].toString();
+            var x2 = bodyparts[id][1][0].toString();
+            var y2 = bodyparts[id][1][1].toString();
+          }
+          var idtemp = counter.toString() + " " + id.toString();
+          createLine(x1, y1, x2, y2, idtemp);
         }
 
         for(var id in newpoints){
@@ -524,8 +590,9 @@
           var y = newpoints[id][1];
           var strx = x.toString();
           var stry = y.toString();
-          console.log(strx + " " + stry);
-          createPoint(strx, stry, id);
+          //console.log(strx + " " + stry);
+          var idtemp = counter.toString() + " " + id.toString();
+          createPoint(strx, stry, idtemp);
         }
       }
 
@@ -541,16 +608,20 @@
         document.getElementById("svg").appendChild(point);
       }
 
-      //create polyline with given points for display
-      function createPolyline(p){
-        var polyline = document.createElementNS(svgNS, "polyline");
-        polyline.setAttributeNS(null, "points", p);
-        polyline.setAttributeNS(null, "class", color);
+      function createLine(x1, y1, x2, y2, id){
+        var line = document.createElementNS(svgNS, "line");
+        line.setAttributeNS(null, "x1", x1);
+        line.setAttributeNS(null, "y1", y1);
+        line.setAttributeNS(null, "x2", x2);
+        line.setAttributeNS(null, "y2", y2);
+        line.setAttributeNS(null, "class", color);
+        line.setAttributeNS(null, "id", id);
+        line.setAttributeNS(null, "onload", "pointchange(evt)");
 
-        document.getElementById("svg").appendChild(polyline);
+        document.getElementById("svg").appendChild(line);
       }
 
-      //destroy all displayed polylines
+      //destroy all displayed svg elements
       function destroySvgEl(){
         var svg = document.getElementById("svg");
         while (svg.firstChild) {
@@ -558,9 +629,9 @@
         }
       }
 
-      //prepare pose keypoints for display as svg if only one json file is given
+      //Not finished will be included in future versions: prepare pose keypoints for display as svg if only one json file is given
       function displayAnnotationsSingle(r){
-        var points = [];
+        /**var points = [];
         for(var i = 0; i < r.length; i++){
           var rawPoints = r[i].keypoints;
           //console.log(rawPoints);
@@ -580,7 +651,7 @@
             poly.points = strPoints;
             poly.parentNode.insertBefore(poly, imag);
           }
-        }
+        }**/
       }
 
       //change css class of svg elements to change appearance for the current and following annotations
