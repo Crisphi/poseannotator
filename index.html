@@ -110,6 +110,7 @@
       var image_file_list = {};
       var current_image_id;
       var current_image_source;
+      var unsavedChanges = {};
       var color = "black";
 
       var bodyparts = {};
@@ -207,9 +208,9 @@
           boundaryX2 = svgtemp.width.baseVal.value;
           boundaryY2 = svgtemp.height.baseVal.value;
 
-          /**console.log("Boundaries:");
-          console.log(boundaryX2);
-          console.log(boundaryY2);**/
+          //console.log("Boundaries:");
+          //console.log(boundaryX2);
+          //console.log(boundaryY2);
 
           //correct mouse offset in relation to svg through a transformation
           if(evt.target.classList.contains("point")){
@@ -270,7 +271,7 @@
             var ids = pointId.split(" ");
             var pointschemaId = ids[1];
             var poseId = ids[0];
-            console.log("Pointschema Id: " + pointschemaId);
+            //console.log("Pointschema Id: " + pointschemaId);
             var lineIds = {};
             //get all bodyparts that have the right identifier
             for(var i in bodyschema){
@@ -282,18 +283,18 @@
             }
 
             for(var k in lineIds){
-              console.log(k);
+              //console.log(k);
               var line = document.getElementById(k.toString());
 
               if(line){
                 if(lineIds[k] == 0){
                   line.setAttributeNS(null,"x1", coord.x);
                   line.setAttributeNS(null,"y1", coord.y);
-                  console.log("changed x1 and y1");
+                  //console.log("changed x1 and y1");
                 }else if(lineIds[k] == 1){
                   line.setAttributeNS(null,"x2", coord.x);
                   line.setAttributeNS(null,"y2", coord.y);
-                  console.log("changed x2 and y2");
+                  //console.log("changed x2 and y2");
                 }else{
                   console.log("An error occured. Look in source code function pointchange() to see what happened.");
                 }
@@ -439,6 +440,7 @@
 
       //function for loading next image with annotations
       function nextImage(){
+        cacheAnnotations();
         if(current_image_id >= image_file_list.length -1){
           current_image_id = 0;
         }else{
@@ -454,6 +456,7 @@
 
       //function for loading previous image with annotations
       function previousImage(){
+        cacheAnnotations();
         if(current_image_id <= 0){
           current_image_id = image_file_list.length - 1;
         }else{
@@ -467,9 +470,9 @@
         }
       }
 
-      // load annotations if there is only one json file
+      //Not finished will be included in future versions: load annotations if there is only one json file
       function loadAnnotationsSingle(){
-        var results = [];
+        /**var results = [];
         var anno_image_id;
 
         //search for the current image id in annotations
@@ -488,10 +491,10 @@
             }
           }
         }else{
-          console.log("image_id not found");
+          //console.log("image_id not found");
         }
         //console.log(results);
-        /**if(results.length > 0){
+        if(results.length > 0){
           displayAnnotations(results);
         }**/
       }
@@ -499,7 +502,11 @@
       // load annotations if there are multiple json files
       function loadAnnotations(){
         var results = [];
-        var p = annotations["people"];
+        if(current_image_id in unsavedChanges){
+          var p = unsavedChanges[current_image_id]["people"];
+        }else{
+          var p = annotations["people"];
+        }
         //console.log(p);
         //save pose keypoints in results
         for(var i = 0; i < p.length; i++){
@@ -571,7 +578,7 @@
             delete bodyparts[i];
           }
         }
-        console.log(bodyparts);
+        //console.log(bodyparts);
 
         //stringify point arrays and start line creation
         for(var id in bodyparts){
@@ -667,6 +674,66 @@
         }
       }
 
+      //function for chaching the made changes
+      function cacheAnnotations(){
+        var svg = document.getElementById("svg");
+        var children = svg.childNodes;
+        var pointcounter = 0;
+
+
+        for(var i = 0; i < children.length; i++){
+          if(children[i].classList.contains("point")){
+
+            var cx = children[i].getAttribute("cx");
+            var cy = children[i].getAttribute("cy");
+
+            // flatten the transformations made to the svg points to get new coordinates
+            if(children[i].transform.baseVal.length != 0){
+              var matrix = children[i].transform.baseVal.consolidate().matrix;
+              var cache = svg.createSVGPoint();
+              cache.x = cx;
+              cache.y = cy;
+              cache = cache.matrixTransform(matrix);
+              var x = cache.x;
+              var y = cache.y;
+            }else{
+              var x = cx;
+              var y = cy;
+            }
+
+            //get Ids to save coordinates in the given schema and at the right index
+            var pointId = children[i].getAttribute("id");
+            var ids = pointId.split(" ");
+            var pointschemaId = ids[1];
+            var poseId = ids[0];
+            //console.log("Ids: " + "point: " + pointschemaId + " pose: "+ poseId);
+
+            var intPose = parseInt(poseId);
+            var intId = parseInt(pointschemaId);
+            var id1 = (intId * 2) + pointcounter;
+            var id2 = id1 + 1;
+
+            if(intId == 24){
+              pointcounter = 0;
+            }else{
+              pointcounter++;
+            }
+            //console.log(intId, id1, id2);
+
+            //overwrite old coordinates with new ones
+            //console.log("Before: " + annotations["people"][poseId]["pose_keypoints_2d"][id1] + " " + annotations["people"][poseId]["pose_keypoints_2d"][id2]);
+            annotations["people"][poseId]["pose_keypoints_2d"][id1] = x;
+            annotations["people"][poseId]["pose_keypoints_2d"][id2] = y;
+
+            //console.log("After: " + annotations["people"][poseId]["pose_keypoints_2d"][id1] + " " + annotations["people"][poseId]["pose_keypoints_2d"][id2]);
+
+          }
+        }
+
+        //clone annotation object and save annotations with image id in unsavedChanges {}
+        unsavedChanges[current_image_id] =  Object.assign({},annotations);
+        console.log(unsavedChanges);
+      }
 
     </script>
   </body>
