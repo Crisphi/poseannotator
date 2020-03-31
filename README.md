@@ -1,7 +1,6 @@
 # poseannotator
 
 ## Currently working on
-* reloading of unsaved changes
 * undo function of recently made changes
 
 ## To Do's
