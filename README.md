@@ -1,7 +1,10 @@
 # poseannotator
 
-## To Do's
+## Currently working on
+* reloading of unsaved changes
+* undo function of recently made changes
 
+## To Do's
 * possibility of adding new points without violating bodyschema rules
 * export of changed json files
 * support single-file json annotations
