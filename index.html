@@ -154,7 +154,7 @@
       var boundaryY1 = 0;
       var boundaryX2 = document.getElementById("svg").width;
       var boundaryY2 = document.getElementById("svg").height;
-
+      var deletekeypressed = false;
       var svgNS = "http://www.w3.org/2000/svg";
 
       // Check for the various File API support.
@@ -177,6 +177,7 @@
           changeAnnoColor();
         }
         else if(event.keyCode == 68){
+          deletekeypressed = true;
           var svg = document.getElementById("svg");
           for(var i = 0; i < svg.childNodes.length; i++){
             svg.childNodes[i].setAttributeNS(null, "style", "stroke: red;");
@@ -186,6 +187,7 @@
 
       document.addEventListener("keyup", function(event){
         if(event.keyCode == 68){
+          deletekeypressed = false;
           var svg = document.getElementById("svg");
           for(var i = 0; i < svg.childNodes.length; i++){
             svg.childNodes[i].removeAttributeNS(null, "style");
@@ -197,18 +199,50 @@
         var svg = evt.target;
 
         //set event listeners for mouse movement
-        /**svg.addEventListener("mousedown", function(event){
-          if(event.ctrlKey){
-            undoChanges();
+        svg.addEventListener("mousedown", function(event){
+          if(deletekeypressed){
+            undoChanges(event);
           }else{
-            startDrag();
+            startDrag(event);
           }
-        });**/
+        });
         svg.addEventListener("mousedown", startDrag);
         svg.addEventListener("mousemove", drag);
         svg.addEventListener("mouseup", endDrag);
         svg.addEventListener("mouseleave", endDrag);
 
+        //set coordinates of selected point back to default
+        function undoChanges(evt){
+          if(evt.target.classList.contains("point")){
+            selectedElement = evt.target;
+            if(selectedElement.hasAttributeNS(null,"transform")){
+              selectedElement.removeAttributeNS(null, "transform");
+
+              var lineIds = getLineIds();
+
+              var x = selectedElement.getAttributeNS(null, "cx");
+              var y = selectedElement.getAttributeNS(null, "cy");
+              for(var k in lineIds){
+                //console.log(k);
+                var line = document.getElementById(k.toString());
+
+                if(line){
+                  if(lineIds[k] == 0){
+                    line.setAttributeNS(null,"x1", x);
+                    line.setAttributeNS(null,"y1", y);
+                    //console.log("changed x1 and y1");
+                  }else if(lineIds[k] == 1){
+                    line.setAttributeNS(null,"x2", x);
+                    line.setAttributeNS(null,"y2", y);
+                    //console.log("changed x2 and y2");
+                  }else{
+                    console.log("An error occured. Look in source code function undoChanges() to see what happened.");
+                  }
+                }
+              }
+            }
+          }
+        }
         //track mouseposition on screen if mouse interacts with svg
         function getMousePos(evt){
           var ctm = svg.getScreenCTM();
@@ -285,23 +319,7 @@
             }
             //set new position for svg point
             transform.setTranslate(dx, dy);
-
-            //set new position for svg lines if selected point is one of the coordinates
-            //get point id and bodyschema ids for identifing correct lines
-            var pointId = selectedElement.getAttribute("id");
-            var ids = pointId.split(" ");
-            var pointschemaId = ids[1];
-            var poseId = ids[0];
-            //console.log("Pointschema Id: " + pointschemaId);
-            var lineIds = {};
-            //get all bodyparts that have the right identifier
-            for(var i in bodyschema){
-              for(var j = 0; j < bodyschema[i].length; j++){
-                if(bodyschema[i][j] == pointschemaId){
-                  lineIds[poseId + " " + i] = j;
-                }
-              }
-            }
+            var lineIds = getLineIds();
 
             for(var k in lineIds){
               //console.log(k);
@@ -322,6 +340,26 @@
               }
             }
           }
+        }
+
+        //set new position for svg lines if selected point is one of the coordinates
+        function getLineIds (){
+          //get point id and bodyschema ids for identifing correct lines
+          var pointId = selectedElement.getAttribute("id");
+          var ids = pointId.split(" ");
+          var pointschemaId = ids[1];
+          var poseId = ids[0];
+          //console.log("Pointschema Id: " + pointschemaId);
+          var lineIds = {};
+          //get all bodyparts that have the right identifier
+          for(var i in bodyschema){
+            for(var j = 0; j < bodyschema[i].length; j++){
+              if(bodyschema[i][j] == pointschemaId){
+                lineIds[poseId + " " + i] = j;
+              }
+            }
+          }
+          return lineIds;
         }
 
         //handles mouseup and mouseleave events; stops dragging process
@@ -756,13 +794,7 @@
         console.log(unsavedChanges);
       }
 
-      function undoChanges(){
-        var svg = document.getElementById("svg");
-        for(var i = 0; i < svg.childNodes.length; i++){
-          svg.childNodes[i].setAttributeNS(null, "style", "stroke: red;");
-        }
 
-      }
     </script>
   </body>
 </html>
