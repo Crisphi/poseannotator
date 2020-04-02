@@ -72,13 +72,15 @@
         <input type="file" id="metadata" accept="application/json" multiple>
         </br>
         <input type="file" id="images" accept="image/*" multiple>
-        <button type="button" id="imageSubmit" onclick="handleFiles();">Load Files</button>
+        <button type="button" id="submitButton" onclick="handleFiles();">Load Files</button>
       </form>
     </div>
     <div id="main" class="gridItem">
       <div id="sidebar" class="gridItem">
         Here are going to be all the tools and an overview of the images
-        <div id="tools">Tools</div>
+        <div id="tools">Tools
+          <button type id="undo" onclick="resetPage();">Undo all Changes on this Image"</button>
+        </div>
         <div id="files">Files</div>
         <div id="arrows">
           <button type="button" id="lastPic" onclick="previousImage();">Prev</button>
@@ -778,11 +780,11 @@
               pointcounter++;
             }
             //console.log(intId, id1, id2);
-
+            var tempAnno = Object.assign({}, annotations);
             //overwrite old coordinates with new ones
             //console.log("Before: " + annotations["people"][poseId]["pose_keypoints_2d"][id1] + " " + annotations["people"][poseId]["pose_keypoints_2d"][id2]);
-            annotations["people"][poseId]["pose_keypoints_2d"][id1] = x;
-            annotations["people"][poseId]["pose_keypoints_2d"][id2] = y;
+            tempAnno["people"][poseId]["pose_keypoints_2d"][id1] = x;
+            tempAnno["people"][poseId]["pose_keypoints_2d"][id2] = y;
 
             //console.log("After: " + annotations["people"][poseId]["pose_keypoints_2d"][id1] + " " + annotations["people"][poseId]["pose_keypoints_2d"][id2]);
 
@@ -790,10 +792,15 @@
         }
 
         //clone annotation object and save annotations with image id in unsavedChanges {}
-        unsavedChanges[current_image_id] =  Object.assign({},annotations);
+        unsavedChanges[current_image_id] =  Object.assign({},tempAnno);
         console.log(unsavedChanges);
       }
 
+      function resetPage (){
+        unsavedChanges[current_image_id] = Object.assign({},annotations);
+        destroySvgEl();
+        loadAnnotations();
+      }
 
     </script>
   </body>
