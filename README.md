@@ -12,3 +12,4 @@
 ## Things to think about
 
 * How do we want to proceed with confidence levels? Do we overwrite them?
+* In which format should the new annotations be saved? In one single JSON file? Should all JSON files be saved or just the ones that have changed?
