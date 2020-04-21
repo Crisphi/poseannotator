@@ -1,13 +1,15 @@
 # poseannotator
 
 ## Currently working on
-* possibility of adding new points without violating bodyschema rules
+* export of changed json files
 
 ## To Do's
-* export of changed json files
+
 * support single-file json annotations
 * pretty user interface
 * fix issues with nightly firefox browser
+
+* possibility of adding new points without violating bodyschema rules --> fix new issues
 
 ## Things to think about
 

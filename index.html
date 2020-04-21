@@ -63,6 +63,10 @@
       .point{
 
       }
+
+      #createDescr{
+        display:none;
+      }
     </style>
   </head>
   <body>
@@ -79,7 +83,13 @@
       <div id="sidebar" class="gridItem">
         Here are going to be all the tools and an overview of the images
         <div id="tools">Tools
-          <button type id="undo" onclick="resetPage();">Undo all Changes on this Image"</button>
+          <button type="button" id="undoButton" onclick="resetPage();">Undo all Changes on this Image</button>
+          <button type="button" id="resetButton" onclick="toggleResetMode(!resetMode);">Reset Mode</button>
+          <button type="button" id="createButton" onclick="toggleCreationMode(!creationMode);">Creation Mode</button>
+          <button type="button" id="deleteButton" onclick="toggleDeletionMode(!deletionMode);">Deletion Mode</button>
+          <div id="optionsContainer">
+            <p id="createDescr">Possible Points to add (klick on joint where a part of the pose is missing):</p>
+          </div>
         </div>
         <div id="files">Files</div>
         <div id="arrows">
@@ -114,6 +124,9 @@
       var current_image_source;
       var unsavedChanges = {};
       var color = "black";
+      var resetMode = false;
+      var creationMode = false;
+      var deletionMode = false;
 
       var bodyparts = {};
 
@@ -144,6 +157,9 @@
         "footR3": [14, 21]
       };
 
+      var highlighted;
+      var creating;
+      var creationPoint;
       var selectedElement;
       var offset;
       var transform;
@@ -156,7 +172,6 @@
       var boundaryY1 = 0;
       var boundaryX2 = document.getElementById("svg").width;
       var boundaryY2 = document.getElementById("svg").height;
-      var deletekeypressed = false;
       var svgNS = "http://www.w3.org/2000/svg";
 
       // Check for the various File API support.
@@ -179,31 +194,32 @@
           changeAnnoColor();
         }
         else if(event.keyCode == 68){
-          deletekeypressed = true;
-          var svg = document.getElementById("svg");
-          for(var i = 0; i < svg.childNodes.length; i++){
-            svg.childNodes[i].setAttributeNS(null, "style", "stroke: red;");
-          }
+          console.log("d was pressed");
+          toggleDeletionMode(!deletionMode);
+        }else if(event.keyCode == 67){
+          console.log("c was pressed");
+          toggleCreationMode(!creationMode);
+        }else if(event.keyCode == 82){
+          console.log("r was pressed");
+          toggleResetMode(!resetMode);
         }
       });
 
-      document.addEventListener("keyup", function(event){
-        if(event.keyCode == 68){
-          deletekeypressed = false;
-          var svg = document.getElementById("svg");
-          for(var i = 0; i < svg.childNodes.length; i++){
-            svg.childNodes[i].removeAttributeNS(null, "style");
-          }
-        }
-      });
       //function for making the annotation points draggable
       function draggable(evt){
         var svg = evt.target;
 
         //set event listeners for mouse movement
         svg.addEventListener("mousedown", function(event){
-          if(deletekeypressed){
+          if(creating){
+            creating = false;
+            endDrag(event);
+          }else if(resetMode){
             undoChanges(event);
+          }else if(creationMode){
+            addAnnotation(event);
+          }else if(deletionMode){
+            deletePoint(event);
           }else{
             startDrag(event);
           }
@@ -212,6 +228,52 @@
         svg.addEventListener("mousemove", drag);
         svg.addEventListener("mouseup", endDrag);
         svg.addEventListener("mouseleave", endDrag);
+
+        function addAnnotation(evt){
+          var descr = document.getElementById("createDescr");
+          var svg = document.getElementById("svg");
+          var children = svg.childNodes;
+          if(evt.target.classList.contains("point")){
+            if(highlighted){
+              highlighted.removeAttribute("style");
+              deleteDescr();
+            }
+            selectedElement = evt.target;
+            highlighted = selectedElement;
+            selectedElement.setAttributeNS(null, "style", "fill: red;")
+            var pointId = selectedElement.getAttribute("id");
+            var ids = pointId.split(" ");
+            var pointschemaId = ids[1];
+            var poseId = ids[0];
+
+            for(var i in bodyschema){
+              if(bodyschema[i][0] == pointschemaId){
+                //console.log(bodyschema[i]);
+                for(var j = 0; j < children.length; j++){
+                  if(children[j].classList.contains("point")){
+                    var pointId2 = children[j].getAttribute("id");
+                    var ids2 = pointId2.split(" ");
+                    if((ids2[1] == bodyschema[i][1]) && (ids2[0] == ids[0])){
+                      console.log(children[j].getAttribute("cx"));
+                      var xTemp = parseInt(children[j].getAttribute("cx"));
+                      var yTemp = parseInt(children[j].getAttribute("cy"));
+                      if((xTemp == "0") && (yTemp == "0")){
+                        console.log(xTemp, yTemp);
+                        console.log(i);
+                        var btn = document.createElement("BUTTON");
+                        btn.innerHTML = i;
+                        btn.setAttribute("pointId", pointId);
+                        btn.setAttribute("onclick", "fireButton(this);")
+                        descr.appendChild(btn);
+                        console.log(pointId);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
 
         //set coordinates of selected point back to default
         function undoChanges(evt){
@@ -240,6 +302,31 @@
                   }else{
                     console.log("An error occured. Look in source code function undoChanges() to see what happened.");
                   }
+                }
+              }
+            }
+          }
+        }
+
+        function deletePoint(evt){
+
+          console.log("Point Deletion");
+
+          if(evt.target.classList.contains("point")){
+            selectedElement = evt.target;
+            if(selectedElement.hasAttributeNS(null,"transform")){
+              selectedElement.removeAttributeNS(null, "transform");
+
+              selectedElement.setAttributeNS(null, "cx", 0);
+              selectedElement.setAttributeNS(null, "cy", 0);
+
+              var lineIds = getLineIds();
+
+              for(var k in lineIds){
+                //console.log(k);
+                var line = document.getElementById(k.toString());
+                if(line){
+                  line.remove();
                 }
               }
             }
@@ -370,35 +457,18 @@
         }
       }
 
+      function fireButton(btn){
+        console.log("fired Button event");
+        var pointId = btn.getAttribute("pointId");
+        var point = document.getElementById(pointId);
 
+        var eventDown = new MouseEvent("mousedown");
+        point.dispatchEvent(eventDown);
+        var eventMove = new MouseEvent("mousemove");
+      }
 
         //Not finished will be included in future versions: load json file if the annotations are saved in only one json file
       function loadMetaFileSingle(){
-        /**single_meta_file = true;
-
-        //console.log(meta_file_list);
-
-        //for every selected file launch a file reader to get content of file as a string array
-        for(var i = 0; i < meta_file_list.length; i++){
-          var d = meta_file_list[i];
-          //console.log(d);
-          //create file reader
-          var reader = new FileReader();
-          //assign file reader with function
-          reader.onload = getAnnotations;
-          //execute file reader, after that start loading annotations
-          reader.readAsText(d).then(loadAnnotationsSingle());
-        }
-        function getAnnotations(t, callback = function(){loadAnnotations();}){
-          let lines = t.target.result;
-          //parse result string as JSON
-          var a = JSON.parse(lines);
-          //add annotations of file to annotation array
-          annotations = $.extend(annotations,a);
-          //console.log("Annotations:");
-          //console.log(annotations);
-          callback();
-        }**/
 
       }
 
@@ -499,8 +569,27 @@
         }
       }
 
+      function disableModes(current = ""){
+        if(current == "resetMode"){
+          creationMode = false;
+          deletionMode = false;
+        }else if(current == "deletionMode"){
+          creationMode = false;
+          resetMode = false;
+        }else if(current == "creationMode"){
+          resetMode = false;
+          deletionMode = false;
+        }else{
+          creationMode = false;
+          resetMode = false;
+          deletionMode = false;
+        }
+      }
+
       //function for loading next image with annotations
       function nextImage(){
+        disableModes();
+        deleteDescr();
         cacheAnnotations();
         if(current_image_id >= image_file_list.length -1){
           current_image_id = 0;
@@ -517,6 +606,8 @@
 
       //function for loading previous image with annotations
       function previousImage(){
+        disableModes();
+        deleteDescr();
         cacheAnnotations();
         if(current_image_id <= 0){
           current_image_id = image_file_list.length - 1;
@@ -533,31 +624,7 @@
 
       //Not finished will be included in future versions: load annotations if there is only one json file
       function loadAnnotationsSingle(){
-        /**var results = [];
-        var anno_image_id;
 
-        //search for the current image id in annotations
-        for(var j=0; j < annotations["images"].length; j++){
-          if(annotations["images"][j]["file_name"] == current_image_source){
-            anno_image_id = annotations["images"][j]["id"];
-          }
-        }
-        //console.log(anno_image_id);
-
-        //if found save annotations for specific picture in results
-        if(anno_image_id){
-          for(var k= 0; k < annotations["annotations"].length; k++){
-            if(annotations["annotations"][k]["image_id"] == anno_image_id){
-              results.push(annotations["annotations"][k]);
-            }
-          }
-        }else{
-          //console.log("image_id not found");
-        }
-        //console.log(results);
-        if(results.length > 0){
-          displayAnnotations(results);
-        }**/
       }
 
       // load annotations if there are multiple json files
@@ -699,27 +766,6 @@
 
       //Not finished will be included in future versions: prepare pose keypoints for display as svg if only one json file is given
       function displayAnnotationsSingle(r){
-        /**var points = [];
-        for(var i = 0; i < r.length; i++){
-          var rawPoints = r[i].keypoints;
-          //console.log(rawPoints);
-          for(var j = 0; j < rawPoints.length; j++){
-            if((j+1) % 3 != 0){
-              points.push(rawPoints[j]);
-            }
-          }
-          //console.log(points);
-
-          //stringify point arrays and start polyline creation
-          var strPoints = points.toString();
-          var imag = document.getElementById("image");
-          if(imag.complete){
-            var poly = new SVGPolylineElement();
-            poly.id = "annotation" + i;
-            poly.points = strPoints;
-            poly.parentNode.insertBefore(poly, imag);
-          }
-        }**/
       }
 
       //change css class of svg elements to change appearance for the current and following annotations
@@ -780,11 +826,11 @@
               pointcounter++;
             }
             //console.log(intId, id1, id2);
-            var tempAnno = Object.assign({}, annotations);
+            unsavedChanges[current_image_id] = Object.assign({}, annotations);
             //overwrite old coordinates with new ones
             //console.log("Before: " + annotations["people"][poseId]["pose_keypoints_2d"][id1] + " " + annotations["people"][poseId]["pose_keypoints_2d"][id2]);
-            tempAnno["people"][poseId]["pose_keypoints_2d"][id1] = x;
-            tempAnno["people"][poseId]["pose_keypoints_2d"][id2] = y;
+            unsavedChanges[current_image_id]["people"][poseId]["pose_keypoints_2d"][id1] = x;
+            unsavedChanges[current_image_id]["people"][poseId]["pose_keypoints_2d"][id2] = y;
 
             //console.log("After: " + annotations["people"][poseId]["pose_keypoints_2d"][id1] + " " + annotations["people"][poseId]["pose_keypoints_2d"][id2]);
 
@@ -792,14 +838,80 @@
         }
 
         //clone annotation object and save annotations with image id in unsavedChanges {}
-        unsavedChanges[current_image_id] =  Object.assign({},tempAnno);
         console.log(unsavedChanges);
       }
 
       function resetPage (){
+        disableModes();
+
         unsavedChanges[current_image_id] = Object.assign({},annotations);
         destroySvgEl();
         loadAnnotations();
+      }
+
+      function toggleCreationMode(on){
+        var descr = document.getElementById("createDescr");
+        disableModes("creationMode");
+        var svg = document.getElementById("svg");
+        if(on){
+          creationMode = true;
+          descr.style.display = "block";
+          for(var i = 0; i < svg.childNodes.length; i++){
+            svg.childNodes[i].setAttributeNS(null, "style", "stroke: green;");
+          }
+        }else{
+          creationMode = false;
+
+          if(highlighted){
+            highlighted.removeAttribute("style");
+            highlighted = null;
+          }
+
+          descr.style.display = "none";
+          for(var i = 0; i < svg.childNodes.length; i++){
+            svg.childNodes[i].removeAttributeNS(null, "style");
+          }
+          deleteDescr();
+        }
+      }
+
+      function toggleResetMode(on){
+        disableModes("resetMode");
+        var svg = document.getElementById("svg");
+        if(on){
+          resetMode = true;
+          for(var i = 0; i < svg.childNodes.length; i++){
+            svg.childNodes[i].setAttributeNS(null, "style", "stroke: purple;");
+          }
+        }else{
+          resetMode = false;
+          for(var i = 0; i < svg.childNodes.length; i++){
+            svg.childNodes[i].removeAttributeNS(null, "style");
+          }
+        }
+      }
+
+      function toggleDeletionMode(on){
+        disableModes("deletionMode");
+        var svg = document.getElementById("svg");
+        if(on){
+          deletionMode = true;
+          for(var i = 0; i < svg.childNodes.length; i++){
+            svg.childNodes[i].setAttributeNS(null, "style", "stroke: red;");
+          }
+        }else{
+          deletionMode = false;
+          for(var i = 0; i < svg.childNodes.length; i++){
+            svg.childNodes[i].removeAttributeNS(null, "style");
+          }
+        }
+      }
+
+      function deleteDescr(){
+        var descr = document.getElementById("createDescr");
+        for(var j = 1; j < descr.childNodes.length; j++){
+          descr.childNodes[j].remove();
+        }
       }
 
     </script>
