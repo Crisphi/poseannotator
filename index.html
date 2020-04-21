@@ -229,6 +229,7 @@
         svg.addEventListener("mouseup", endDrag);
         svg.addEventListener("mouseleave", endDrag);
 
+        //currently not working! function for adding new points to an uncomplete bodyschema
         function addAnnotation(evt){
           var descr = document.getElementById("createDescr");
           var svg = document.getElementById("svg");
@@ -308,20 +309,22 @@
           }
         }
 
+        //Delete parts of the pose
         function deletePoint(evt){
-
           console.log("Point Deletion");
 
           if(evt.target.classList.contains("point")){
             selectedElement = evt.target;
+            //removes transformations if they exist
             if(selectedElement.hasAttributeNS(null,"transform")){
               selectedElement.removeAttributeNS(null, "transform");
-
+              //sets coordinates of point to 0
               selectedElement.setAttributeNS(null, "cx", 0);
               selectedElement.setAttributeNS(null, "cy", 0);
 
+              //get all lines that connect to point
               var lineIds = getLineIds();
-
+              //delete all connected lines
               for(var k in lineIds){
                 //console.log(k);
                 var line = document.getElementById(k.toString());
@@ -456,7 +459,7 @@
           selectedElement = false;
         }
       }
-
+      //currently not working a failed try to create points of specific bodyparts
       function fireButton(btn){
         console.log("fired Button event");
         var pointId = btn.getAttribute("pointId");
@@ -569,6 +572,7 @@
         }
       }
 
+      //disables all modes (optional leave current mode on)
       function disableModes(current = ""){
         if(current == "resetMode"){
           creationMode = false;
@@ -731,6 +735,7 @@
         }
       }
 
+      //creates a new svg point (circle) and sets all the attributes to the correct values
       function createPoint(x, y, id){
         var point = document.createElementNS(svgNS, "circle");
         var classes = color + " point";
@@ -743,6 +748,7 @@
         document.getElementById("svg").appendChild(point);
       }
 
+      //creates a new svg line and sets all the attributes to the correct values
       function createLine(x1, y1, x2, y2, id){
         var line = document.createElementNS(svgNS, "line");
         line.setAttributeNS(null, "x1", x1);
@@ -841,14 +847,16 @@
         console.log(unsavedChanges);
       }
 
+      //reset all poses to the values from the original json file
       function resetPage (){
         disableModes();
-
+        //overwrite cached annotations with the ones from json file
         unsavedChanges[current_image_id] = Object.assign({},annotations);
         destroySvgEl();
         loadAnnotations();
       }
 
+      //enables/disables creation mode and sets color of poses to a different value for recognition
       function toggleCreationMode(on){
         var descr = document.getElementById("createDescr");
         disableModes("creationMode");
@@ -875,6 +883,7 @@
         }
       }
 
+      //enables/disables reset mode and sets color of poses to a different value for recognition
       function toggleResetMode(on){
         disableModes("resetMode");
         var svg = document.getElementById("svg");
@@ -891,6 +900,7 @@
         }
       }
 
+      //enables/disables deletion mode and sets color of poses to a different value for recognition
       function toggleDeletionMode(on){
         disableModes("deletionMode");
         var svg = document.getElementById("svg");
@@ -907,6 +917,7 @@
         }
       }
 
+      //deletes additional buttons for distinct bodyparts in the tool area added creation mode
       function deleteDescr(){
         var descr = document.getElementById("createDescr");
         for(var j = 1; j < descr.childNodes.length; j++){
