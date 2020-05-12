@@ -80,13 +80,15 @@
         <input type="file" id="metadata" accept="application/json" multiple>
         </br>
         <input type="file" id="images" accept="image/*" multiple>
-        <button type="button" id="submitButton" onclick="handleFiles();">Load Files</button>
+        <button type="button" id="submitButton" onclick="handleFiles();">Import Files</button>
+        <button type="button" id="loadButton">Load Project </button>
         <button type="button" id="exportButton" onclick="exportUnfinished();">Export Files</button>
       </form>
     </div>
     <div id="main" class="gridItem">
       <div id="sidebar" class="gridItem">
         Here are going to be all the tools and an overview of the images
+          <p> Checked: <span id = "checked">No</span></p>
         <div id="tools">Tools
           <button type="button" id="undoButton" onclick="resetPage();">Undo all Changes on this Image</button>
           <button type="button" id="resetButton" onclick="toggleResetMode(!resetMode);">Reset Mode</button>
@@ -640,10 +642,13 @@
       // load annotations if there are multiple json files
       function loadAnnotations(){
         var results = [];
+        var checkObject = document.getElementById("checked");
         if(current_image_id in unsavedChanges){
           var p = unsavedChanges[current_image_id]["people"];
+          checkObject.innerHTML = "Yes";
         }else{
           var p = annotations["people"];
+          checkObject.innerHTML = "No";
         }
         //console.log(p);
         //save pose keypoints in results
