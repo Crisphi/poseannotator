@@ -985,6 +985,14 @@
           }
           console.log("Export");
           console.log(exportFile);
+
+          //set data for download file
+          var filename = "poseannotatorFile.json";
+          var text = JSON.stringify(exportFile);
+
+          //start download
+          download(filename, text);
+
         }else{
           alert("No Changes made!");
         }
@@ -1003,6 +1011,20 @@
 
           reader.readAsText(file);
         })
+      }
+
+      //function for creating a html element that will trigger the download link and destroying the element afterwards
+      function download(filename, text){
+        var element = document.createElement("a");
+        element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
+        element.setAttribute("download", filename);
+
+        element.style.display = "none";
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
       }
 
     </script>
