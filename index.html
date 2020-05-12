@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="author" content="Cristian Ortega Singer">
     <script src="https://code.jquery.com/jquery-latest.js"></script>
+    <!-- import jszip.js for zipping-->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.4/jszip.min.js"></script>
+    <!-- FileSaver.js for better downloading-->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.min.js"></script>
     <style>
       div {border-style: dotted;}
       body {display: grid;}
@@ -77,6 +81,7 @@
         </br>
         <input type="file" id="images" accept="image/*" multiple>
         <button type="button" id="submitButton" onclick="handleFiles();">Load Files</button>
+        <button type="button" id="exportButton" onclick="exportUnfinished();">Export Files</button>
       </form>
     </div>
     <div id="main" class="gridItem">
@@ -122,6 +127,7 @@
       var image_file_list = {};
       var current_image_id;
       var current_image_source;
+      var meta_id;
       var unsavedChanges = {};
       var color = "black";
       var resetMode = false;
@@ -485,7 +491,7 @@
         var id = current_image_source.split(".")[0];
         //create a new regex pattern
         var patt = new RegExp(id + "_");
-        var meta_id;
+
         //console.log(id);
         //search in loaded meta files for the correct file via file name and save file in meta_id
         for(var i = 0; i < meta_file_list.length; i++){
@@ -837,6 +843,8 @@
             //console.log("Before: " + annotations["people"][poseId]["pose_keypoints_2d"][id1] + " " + annotations["people"][poseId]["pose_keypoints_2d"][id2]);
             unsavedChanges[current_image_id]["people"][poseId]["pose_keypoints_2d"][id1] = x;
             unsavedChanges[current_image_id]["people"][poseId]["pose_keypoints_2d"][id2] = y;
+            unsavedChanges[current_image_id]["meta_source"] = meta_id;
+            unsavedChanges[current_image_id]["image_source"] = image_file_list[current_image_id];
 
             //console.log("After: " + annotations["people"][poseId]["pose_keypoints_2d"][id1] + " " + annotations["people"][poseId]["pose_keypoints_2d"][id2]);
 
@@ -923,6 +931,78 @@
         for(var j = 1; j < descr.childNodes.length; j++){
           descr.childNodes[j].remove();
         }
+      }
+
+
+
+      async function exportUnfinished(){
+        var exportFile = [];
+        var found = false;
+
+        //checks if there are unsaved Changes
+        if(unsavedChanges[0]){
+          for(var i = 0; i < meta_file_list.length; i++){
+            //checks if there are unsaved Changes in the current metadata-file
+            for(var j in unsavedChanges){
+              if(i == j){
+                console.log("yay!");
+                found = true;
+                //save new metadata in the exportFile array
+                exportFile[i] = Object.assign({}, unsavedChanges[j]);
+                exportFile[i]["checked"] = true;
+              }else{
+                console.log("nay!");
+              }
+            }
+            //current image has no changes yet
+            if(found == false){
+              var meta_name = meta_file_list[i].name;
+              var id = meta_name.split(".")[0];
+
+              //search for the image that belongs to the metadata
+              var patt = new RegExp(id + "_");
+              var imageTemp;
+
+              for(var k = 0; k < image_file_list.length; k++){
+                var d = image_file_list[k];
+                if(patt.test(d.name)){
+                  //console.log(d);
+                  imageTemp = d;
+                }
+              }
+              //wait for the results of the file reading process
+              var result = await readFileAsync(meta_id);
+              //parse current metadata file as json
+              var a = JSON.parse(result);
+              var annotationsTemp = $.extend(annotationsTemp,a);
+              //save modulated metadata in exportFile array
+              exportFile[i] = Object.assign({},annotationsTemp);
+              exportFile[i]["image_source"] = Object.assign({}, imageTemp);
+              exportFile[i]["meta_source"] = Object.assign({}, meta_file_list[i]);
+              exportFile[i]["checked"] = false;
+            }
+            found = false;
+          }
+          console.log("Export");
+          console.log(exportFile);
+        }else{
+          alert("No Changes made!");
+        }
+      }
+
+      //helper function to wrap file reading process in a promise that allows managing asynchronicity
+      function readFileAsync(file){
+        return new Promise((resolve, reject) => {
+          let reader = new FileReader ();
+
+          reader.onload = () => {
+            resolve(reader.result);
+          };
+
+          reader.onerror = reject;
+
+          reader.readAsText(file);
+        })
       }
 
     </script>
