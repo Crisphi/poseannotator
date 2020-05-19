@@ -632,6 +632,7 @@
               console.log(meta_file_list);
 
               loadImage();
+              loadWorkingMeta();
             }){
             //console.log(callback);
             let lines = t.target.result;
@@ -642,6 +643,18 @@
         }
       }
 
+      function loadWorkingMeta(){
+        single_meta_file = false;
+
+        for(var i in working_data){
+          if(current_image_source == working_data[i].image_source){
+            annotations["people"] = Object.values(working_data[i].people);
+            console.log("Annotations:");
+            console.log(annotations);
+            loadAnnotations();
+          }
+        }
+      }
 
       //disables all modes (optional leave current mode on)
       function disableModes(current = ""){
@@ -724,8 +737,8 @@
           //console.log(t);
           results.push(t);
         }
-        //console.log("Results:");
-        //console.log(results);
+        console.log("Results:");
+        console.log(results);
         //start disply for each pose
         for(var j= 0; j < results.length; j++){
           displayAnnotations(results[j], j);
