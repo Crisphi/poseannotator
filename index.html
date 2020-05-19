@@ -6,9 +6,9 @@
     <meta name="author" content="Cristian Ortega Singer">
     <script src="https://code.jquery.com/jquery-latest.js"></script>
     <!-- import jszip.js for zipping-->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.4/jszip.min.js"></script>
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.4/jszip.min.js"></script> -->
     <!-- FileSaver.js for better downloading-->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.min.js"></script>
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.min.js"></script> -->
     <style>
       div {border-style: dotted;}
       body {display: grid;}
@@ -80,8 +80,9 @@
         <input type="file" id="metadata" accept="application/json" multiple>
         </br>
         <input type="file" id="images" accept="image/*" multiple>
-        <button type="button" id="submitButton" onclick="handleFiles();">Import Files</button>
-        <button type="button" id="loadButton">Load Project </button>
+        <button type="button" id="importButton" onclick="handleFiles();">Import Files</button>
+        <input type="file" id="workingfile" accept="application/json">
+        <button type="button" id="loadButton" onclick="handleWorkingFile();">Load Project </button>
         <button type="button" id="exportButton" onclick="exportUnfinished();">Export Files</button>
       </form>
     </div>
@@ -131,6 +132,10 @@
       var current_image_source;
       var meta_id;
       var unsavedChanges = {};
+
+      var working_file_list = {};
+      var working_data = {};
+
       var color = "black";
       var resetMode = false;
       var creationMode = false;
@@ -535,11 +540,14 @@
         }else if(!meta_file_list[0]){
           alert("You have to select JSON files before you can continue!");
         }else if(image_file_list[0] && meta_file_list[0]){
+          console.log(image_file_list);
+          console.log(meta_file_list);
           if(annotations){
-            if(confirm("Annotations already included! Do you want to replace annotation File(s)?")){
+            if(confirm("Annotations already included! Unsaved changes will be lost! Do you want to replace annotation File(s)?")){
               current_image_id = 0;
               loadImage();
               annotations = {};
+              unsavedChanges = {};
               if(meta_file_list.length > 1){
                 loadMetaFiles();
               }else{
@@ -550,6 +558,7 @@
             current_image_id = 0;
             loadImage();
             annotations = {};
+            unsavedChanges = {};
             //check if there are multiple json files or just one
             if(meta_file_list.length > 1){
               loadMetaFiles();
@@ -579,6 +588,60 @@
           }
         }
       }
+
+      function handleWorkingFile(){
+        working_file_list = document.getElementById("workingfile").files;
+        if(!working_file_list[0]){
+          alert("You have to select a project to load before you can continue!");
+        }else{
+          console.log(working_file_list);
+          if(annotations){
+            if(confirm("Annotations already included! Unsaved changes will be lost! Do you want to replace annotation File(s)?")){
+              readWorkingFile();
+            }
+          }else{
+            readWorkingFile();
+          }
+        }
+
+        function readWorkingFile(){
+          current_image_id = 0;
+          annotations = {};
+          unsavedChanges = {};
+
+          var reader = new FileReader();
+          reader.onload = getAnnotations;
+          console.log(working_file_list[0]);
+          reader.readAsText(working_file_list[0]);
+          console.log(reader.readyState);
+
+          function getAnnotations(t, callback = function(){
+              console.log("Working Data:");
+              console.log(working_data);
+              var imageListTemp = [];
+              var metaListTemp = [];
+              for(var i in working_data){
+                imageListTemp[i] = {"name" : working_data[i].image_source};
+                metaListTemp[i] = {"name" : working_data[i].meta_source};
+              }
+              image_file_list = imageListTemp.slice();
+              meta_file_list = metaListTemp.slice();
+              /**image_file_list = Object.assign({}, imageListTemp);
+              meta_file_list = Object.assign({}, metaListTemp);**/
+              console.log(image_file_list);
+              console.log(meta_file_list);
+
+              loadImage();
+            }){
+            //console.log(callback);
+            let lines = t.target.result;
+            var a = JSON.parse(lines);
+            working_data = $.extend(working_data,a);
+            callback();
+          }
+        }
+      }
+
 
       //disables all modes (optional leave current mode on)
       function disableModes(current = ""){
@@ -623,8 +686,12 @@
         cacheAnnotations();
         if(current_image_id <= 0){
           current_image_id = image_file_list.length - 1;
+          console.log("Current: " + current_image_id);
+          console.log("length: " + image_file_list.length);
         }else{
           current_image_id--;
+          console.log("Current: " + current_image_id);
+          console.log("length: " + image_file_list.length -1);
         }
         loadImage();
         if(single_meta_file){
@@ -845,18 +912,13 @@
             //console.log(intId, id1, id2);
             unsavedChanges[current_image_id] = Object.assign({}, annotations);
             //overwrite old coordinates with new ones
-            //console.log("Before: " + annotations["people"][poseId]["pose_keypoints_2d"][id1] + " " + annotations["people"][poseId]["pose_keypoints_2d"][id2]);
             unsavedChanges[current_image_id]["people"][poseId]["pose_keypoints_2d"][id1] = x;
             unsavedChanges[current_image_id]["people"][poseId]["pose_keypoints_2d"][id2] = y;
-            unsavedChanges[current_image_id]["meta_source"] = meta_id;
             unsavedChanges[current_image_id]["image_source"] = image_file_list[current_image_id];
-
-            //console.log("After: " + annotations["people"][poseId]["pose_keypoints_2d"][id1] + " " + annotations["people"][poseId]["pose_keypoints_2d"][id2]);
-
+            unsavedChanges[current_image_id]["meta_source"] = meta_id;
           }
         }
 
-        //clone annotation object and save annotations with image id in unsavedChanges {}
         console.log(unsavedChanges);
       }
 
@@ -954,6 +1016,8 @@
                 found = true;
                 //save new metadata in the exportFile array
                 exportFile[i] = Object.assign({}, unsavedChanges[j]);
+                exportFile[i]["image_source"] = unsavedChanges[j]["image_source"].name;
+                exportFile[i]["meta_source"] = unsavedChanges[j]["meta_source"].name;
                 exportFile[i]["checked"] = true;
               }else{
                 console.log("nay!");
@@ -961,17 +1025,18 @@
             }
             //current image has no changes yet
             if(found == false){
+              console.log(1);
               var meta_name = meta_file_list[i].name;
-              var id = meta_name.split(".")[0];
+              var id = meta_name.split("_")[0];
 
               //search for the image that belongs to the metadata
-              var patt = new RegExp(id + "_");
+              var patt = new RegExp(id + ".");
               var imageTemp;
 
               for(var k = 0; k < image_file_list.length; k++){
                 var d = image_file_list[k];
                 if(patt.test(d.name)){
-                  //console.log(d);
+                  console.log(d);
                   imageTemp = d;
                 }
               }
@@ -982,12 +1047,13 @@
               var annotationsTemp = $.extend(annotationsTemp,a);
               //save modulated metadata in exportFile array
               exportFile[i] = Object.assign({},annotationsTemp);
-              exportFile[i]["image_source"] = Object.assign({}, imageTemp);
-              exportFile[i]["meta_source"] = Object.assign({}, meta_file_list[i]);
+              exportFile[i]["image_source"] = imageTemp.name;
+              exportFile[i]["meta_source"] = meta_name;
               exportFile[i]["checked"] = false;
             }
             found = false;
           }
+          console.log(2)
           console.log("Export");
           console.log(exportFile);
 

@@ -1,7 +1,7 @@
 # poseannotator
 
 ## Currently working on
-* export of changed json files
+* import of poseannotator project file
 
 ## To Do's
 
