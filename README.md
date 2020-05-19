@@ -1,11 +1,10 @@
 # poseannotator
 
 ## Currently working on
-* Fix color bugs
+* Show file list
 * Fix problems with slow loading of jquery
 
 ## To Do's
-
 
 * pretty user interface
 * fix issues with nightly firefox browser

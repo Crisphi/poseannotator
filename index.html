@@ -91,6 +91,10 @@
       <div id="sidebar" class="gridItem">
         Here are going to be all the tools and an overview of the images
           <p> Checked: <span id = "checked">No</span></p>
+          <div id="files">
+            <p>Images:<P>
+            <ul id="fileview"></ul>
+          </div>
         <div id="tools">Tools
           <button type="button" id="undoButton" onclick="resetPage();">Undo all Changes on this Image</button>
           <button type="button" id="resetButton" onclick="toggleResetMode(!resetMode);">Reset Mode</button>
@@ -134,6 +138,8 @@
       var current_image_source;
       var meta_id;
       var unsavedChanges = {};
+
+      var fileview;
 
       var working_file_list = {};
       var working_data = {};
@@ -537,6 +543,7 @@
         image_file_list = document.getElementById("images").files;
         meta_file_list = document.getElementById("metadata").files;
 
+        displayFileList();
         //catching errors
         if(!image_file_list[0]){
           alert("You have to select image files before you can continue!");
@@ -636,6 +643,7 @@
               console.log(image_file_list);
               console.log(meta_file_list);
 
+              displayFileList();
               loadImage();
               loadWorkingMeta();
             }){
@@ -1129,6 +1137,14 @@
         document.body.removeChild(element);
       }
 
+      function displayFileList(){
+        fileview = document.getElementById("fileview");
+        for(var i = 0; i < image_file_list.length; i++){
+          var li = document.createElement("LI");
+          li.innerHTML = "(" + String(i) + ") " + String(image_file_list[i].name);
+          fileview.appendChild(li);
+        }
+      }
     </script>
   </body>
 </html>
