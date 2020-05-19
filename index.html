@@ -125,6 +125,7 @@
       var IMG_FILEPATH = "img/";
       var META_FILEPATH = "metadata/";
       var single_meta_file = false;
+      var working_file = false;
       var meta_file_list = {};
       var annotations;
       var image_file_list = {};
@@ -530,6 +531,7 @@
 
       //initiate the file reading process of json and image files
       function handleFiles(){
+        workingfile = false;
         //get json and image files from the file selector
         image_file_list = document.getElementById("images").files;
         meta_file_list = document.getElementById("metadata").files;
@@ -590,6 +592,7 @@
       }
 
       function handleWorkingFile(){
+        workingfile = true;
         working_file_list = document.getElementById("workingfile").files;
         if(!working_file_list[0]){
           alert("You have to select a project to load before you can continue!");
@@ -685,7 +688,9 @@
           current_image_id++;
         }
         loadImage();
-        if(single_meta_file){
+        if(workingfile){
+          loadWorkingMeta();
+        }else if(single_meta_file){
           loadMetaFileSingle();
         }else{
           loadMetaFiles();
@@ -707,7 +712,9 @@
           console.log("length: " + image_file_list.length -1);
         }
         loadImage();
-        if(single_meta_file){
+        if(workingfile){
+          loadWorkingMeta();
+        }else if(single_meta_file){
           loadMetaFileSingle();
         }else{
           loadMetaFiles();
