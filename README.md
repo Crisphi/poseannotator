@@ -1,15 +1,17 @@
 # poseannotator
 
 ## Currently working on
-* import of poseannotator project file
+* Fix color bugs
+* Fix problems with slow loading of jquery
 
 ## To Do's
 
-* support single-file json annotations
+
 * pretty user interface
 * fix issues with nightly firefox browser
-
 * possibility of adding new points without violating bodyschema rules --> fix new issues
+
+* (support single-file json annotations)
 
 ## Things to think about
 
