@@ -593,6 +593,7 @@
 
       function handleWorkingFile(){
         workingfile = true;
+        single_meta_file = false;
         working_file_list = document.getElementById("workingfile").files;
         if(!working_file_list[0]){
           alert("You have to select a project to load before you can continue!");
@@ -647,11 +648,16 @@
       }
 
       function loadWorkingMeta(){
-        single_meta_file = false;
+        var checkObject = document.getElementById("checked");
 
         for(var i in working_data){
           if(current_image_source == working_data[i].image_source){
             annotations["people"] = Object.values(working_data[i].people);
+            if(working_data[i].checked == true){
+              checkObject.innerHTML = "Yes";
+            }else{
+              checkObject.innerHTML = "No";
+            }
             console.log("Annotations:");
             console.log(annotations);
             loadAnnotations();
@@ -735,7 +741,9 @@
           checkObject.innerHTML = "Yes";
         }else{
           var p = annotations["people"];
-          checkObject.innerHTML = "No";
+          if(!workingfile){
+            checkObject.innerHTML = "No";
+          }
         }
         //console.log(p);
         //save pose keypoints in results
@@ -1061,10 +1069,11 @@
                 }
               }
               //wait for the results of the file reading process
-              var result = await readFileAsync(meta_id);
+              var result = await readFileAsync(meta_file_list[i]);
               //parse current metadata file as json
               var a = JSON.parse(result);
               var annotationsTemp = $.extend(annotationsTemp,a);
+              console.log(annotationsTemp);
               //save modulated metadata in exportFile array
               exportFile[i] = Object.assign({},annotationsTemp);
               exportFile[i]["image_source"] = imageTemp.name;
