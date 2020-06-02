@@ -598,6 +598,9 @@
       //display image
       function loadImage(){
         destroySvgEl();
+        var currentFileLink = document.getElementById(String(current_image_id) + "_link");
+        currentFileLink.style.color = "red";
+
         if(!image_file_list[current_image_id]){
           //console.log(current_image_id);
           alert("An Error occured! No Image Id found.")
@@ -705,6 +708,8 @@
           creationMode = false;
           resetMode = false;
           deletionMode = false;
+          var currentFileLink = document.getElementById(String(current_image_id) + "_link");
+          currentFileLink.style.color = "";
         }
       }
 
@@ -752,6 +757,24 @@
         }
       }
 
+      function specificImage(id){
+        disableModes();
+        deleteDescr();
+        cacheAnnotations();
+        if((id < image_file_list.length) && (id >= 0)){
+          current_image_id = id;
+        }else{
+          alert("An Error occured! Look in code function 'specificImage(id)'");
+        }
+        loadImage();
+        if(workingfile){
+          loadWorkingMeta();
+        }else if(single_meta_file){
+          loadMetaFileSingle();
+        }else{
+          loadMetaFiles();
+        }
+      }
       //Not finished will be included in future versions: load annotations if there is only one json file
       function loadAnnotationsSingle(){
 
@@ -1199,7 +1222,7 @@
 
       //function for creating a html element that will trigger the download link and destroying the element afterwards
       function download(filename, text){
-        var element = document.createElement("a");
+        var element = document.createElement("A");
         element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
         element.setAttribute("download", filename);
 
@@ -1216,7 +1239,11 @@
         fileview = document.getElementById("fileview");
         for(var i = 0; i < image_file_list.length; i++){
           var li = document.createElement("LI");
-          li.innerHTML = "(" + String(i + 1) + ") " + String(image_file_list[i].name);
+          var a = document.createElement("A");
+          a.setAttribute("href", "javascript:specificImage(" + String(i) + ");");
+          a.setAttribute("id", String(i) + "_link");
+          a.innerHTML = "(" + String(i + 1) + ") " + String(image_file_list[i].name);
+          li.appendChild(a);
           fileview.appendChild(li);
         }
       }
