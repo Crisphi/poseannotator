@@ -5,12 +5,16 @@
     <meta charset="UTF-8">
     <meta name="author" content="Cristian Ortega Singer">
     <script src="https://code.jquery.com/jquery-latest.js"></script>
+    <!--import filsaver.js -->
+    <script async="" src="https://cdn.rawgit.com/eligrey/FileSaver.js/5ed507ef8aa53d8ecfea96d96bc7214cd2476fd2/FileSaver.min.js"> </script>
+    <script type="text/javascript" src="https://stuk.github.io/jszip/dist/jszip.min.js"></script>
+    <!--<script src="jszip.js"></script>-->
     <!-- import jszip.js for zipping-->
     <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.4/jszip.min.js"></script> -->
     <!-- FileSaver.js for better downloading-->
     <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.min.js"></script> -->
     <style>
-      div {border-style: dotted;}
+  div {/**border-style: dotted;**/}
       body {display: grid;}
       #header{
         grid-column: 1/span 3;
@@ -72,19 +76,32 @@
       #createDescr{
         display:none;
       }
+
+      #filescroll{
+        width: 200px;
+        height: 300px;
+        overflow: scroll;
+      }
+
+      li{
+        list-style-type: none;
+      }
     </style>
   </head>
   <body>
     <div id="header" class="gridItem">
       Pose Annotator
       <form name="upload-metadata">
+        <span>Metadata: </span>
         <input type="file" id="metadata" accept="application/json" multiple>
         </br>
+        <span>Images: </span>
         <input type="file" id="images" accept="image/*" multiple>
         <button type="button" id="importButton" onclick="handleFiles();">Import Files</button>
         <input type="file" id="workingfile" accept="application/json">
         <button type="button" id="loadButton" onclick="handleWorkingFile();">Load Project </button>
-        <button type="button" id="exportButton" onclick="exportUnfinished();">Export Files</button>
+        <button type="button" id="saveButton" onclick="exportUnfinished();">Save Project</button>
+        <button type="button" id="exportButton" onclick="exportFinished();">Export Project</button>
       </form>
     </div>
     <div id="main" class="gridItem">
@@ -93,7 +110,9 @@
           <p> Checked: <span id = "checked">No</span></p>
           <div id="files">
             <p>Images:<P>
-            <ul id="fileview"></ul>
+            <div id="filescroll">
+              <ul id="fileview"></ul>
+            </div>
           </div>
         <div id="tools">Tools
           <button type="button" id="undoButton" onclick="resetPage();">Undo all Changes on this Image</button>
@@ -194,6 +213,7 @@
       var boundaryX2 = document.getElementById("svg").width;
       var boundaryY2 = document.getElementById("svg").height;
       var svgNS = "http://www.w3.org/2000/svg";
+
 
       // Check for the various File API support.
       if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
@@ -1038,7 +1058,6 @@
       }
 
 
-
       async function exportUnfinished(){
         cacheAnnotations();
         var exportFile = [];
@@ -1108,6 +1127,66 @@
         }
       }
 
+      async function exportFinished(){
+        cacheAnnotations();
+        var exportFile = [];
+        var found = false;
+
+        //checks if there are unsaved Changes
+        if(unsavedChanges[0]){
+          for(var i = 0; i < meta_file_list.length; i++){
+            //checks if there are unsaved Changes in the current metadata-file
+            for(var j in unsavedChanges){
+              if(i == j){
+                console.log("yay!");
+                found = true;
+                //save new metadata in the exportFile array
+                var result = await readFileAsync(meta_file_list[i]);
+                //parse current metadata file as json
+                var a = JSON.parse(result);
+                console.log(a);
+                a["people"] = unsavedChanges[j]["people"];
+                console.log(a);
+                exportFile[i] = Object.assign({}, a);
+              }else{
+                console.log("nay!");
+              }
+            }
+            //current image has no changes yet
+            if(found == false){
+              //wait for the results of the file reading process
+              var result = await readFileAsync(meta_file_list[i]);
+              //parse current metadata file as json
+              var a = JSON.parse(result);
+              console.log(a);
+              //save modulated metadata in exportFile array
+              exportFile[i] = Object.assign({},a);
+            }
+            found = false;
+          }
+          console.log(2)
+          console.log("Export");
+          console.log(exportFile);
+
+          var zip = new JSZip();
+          for(var i = 0; i < exportFile.length; i++){
+            var text = JSON.stringify(exportFile[i]);
+            var filename = meta_file_list[i]["name"];
+            zip.file(filename, text);
+          }
+
+          zip.generateAsync({type:"blob"}).then(function(blob){
+            console.log(zip);
+            saveAs(blob, "pa-export-files.zip");
+          }, function (err){
+            console.log("Error in zipping");
+          });
+
+        }else{
+          alert("No Changes made!");
+        }
+      }
+
       //helper function to wrap file reading process in a promise that allows managing asynchronicity
       function readFileAsync(file){
         return new Promise((resolve, reject) => {
@@ -1141,7 +1220,7 @@
         fileview = document.getElementById("fileview");
         for(var i = 0; i < image_file_list.length; i++){
           var li = document.createElement("LI");
-          li.innerHTML = "(" + String(i) + ") " + String(image_file_list[i].name);
+          li.innerHTML = "(" + String(i + 1) + ") " + String(image_file_list[i].name);
           fileview.appendChild(li);
         }
       }
