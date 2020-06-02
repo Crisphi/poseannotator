@@ -7,12 +7,8 @@
     <script src="https://code.jquery.com/jquery-latest.js"></script>
     <!--import filsaver.js -->
     <script async="" src="https://cdn.rawgit.com/eligrey/FileSaver.js/5ed507ef8aa53d8ecfea96d96bc7214cd2476fd2/FileSaver.min.js"> </script>
-    <script type="text/javascript" src="https://stuk.github.io/jszip/dist/jszip.min.js"></script>
-    <!--<script src="jszip.js"></script>-->
     <!-- import jszip.js for zipping-->
-    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.4/jszip.min.js"></script> -->
-    <!-- FileSaver.js for better downloading-->
-    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.min.js"></script> -->
+    <script type="text/javascript" src="https://stuk.github.io/jszip/dist/jszip.min.js"></script>
     <style>
   div {/**border-style: dotted;**/}
       body {display: grid;}
@@ -1057,9 +1053,11 @@
         }
       }
 
-
+      //function for creating and downloading a working file with already made changes
       async function exportUnfinished(){
+        //save changes on current picture
         cacheAnnotations();
+
         var exportFile = [];
         var found = false;
 
@@ -1069,20 +1067,16 @@
             //checks if there are unsaved Changes in the current metadata-file
             for(var j in unsavedChanges){
               if(i == j){
-                console.log("yay!");
                 found = true;
                 //save new metadata in the exportFile array
                 exportFile[i] = Object.assign({}, unsavedChanges[j]);
                 exportFile[i]["image_source"] = unsavedChanges[j]["image_source"].name;
                 exportFile[i]["meta_source"] = unsavedChanges[j]["meta_source"].name;
                 exportFile[i]["checked"] = true;
-              }else{
-                console.log("nay!");
               }
             }
             //current image has no changes yet
             if(found == false){
-              console.log(1);
               var meta_name = meta_file_list[i].name;
               var id = meta_name.split("_")[0];
 
@@ -1111,7 +1105,6 @@
             }
             found = false;
           }
-          console.log(2)
           console.log("Export");
           console.log(exportFile);
 
@@ -1127,8 +1120,11 @@
         }
       }
 
+      //function for creating and downloading a zip file with all updated json files
       async function exportFinished(){
+        //save changes on current picture
         cacheAnnotations();
+
         var exportFile = [];
         var found = false;
 
@@ -1138,18 +1134,15 @@
             //checks if there are unsaved Changes in the current metadata-file
             for(var j in unsavedChanges){
               if(i == j){
-                console.log("yay!");
                 found = true;
-                //save new metadata in the exportFile array
+
                 var result = await readFileAsync(meta_file_list[i]);
                 //parse current metadata file as json
                 var a = JSON.parse(result);
-                console.log(a);
+                //overwrite metadata with unsavedChanges
                 a["people"] = unsavedChanges[j]["people"];
-                console.log(a);
+
                 exportFile[i] = Object.assign({}, a);
-              }else{
-                console.log("nay!");
               }
             }
             //current image has no changes yet
@@ -1158,23 +1151,25 @@
               var result = await readFileAsync(meta_file_list[i]);
               //parse current metadata file as json
               var a = JSON.parse(result);
-              console.log(a);
-              //save modulated metadata in exportFile array
+              //save metadata in exportFile array
               exportFile[i] = Object.assign({},a);
             }
             found = false;
           }
-          console.log(2)
           console.log("Export");
           console.log(exportFile);
 
+          //create zip element
           var zip = new JSZip();
+
+          //add all metadata files to zip element
           for(var i = 0; i < exportFile.length; i++){
             var text = JSON.stringify(exportFile[i]);
             var filename = meta_file_list[i]["name"];
             zip.file(filename, text);
           }
 
+          //generate zip file and download it
           zip.generateAsync({type:"blob"}).then(function(blob){
             console.log(zip);
             saveAs(blob, "pa-export-files.zip");
@@ -1216,6 +1211,7 @@
         document.body.removeChild(element);
       }
 
+      //function for display of file names in tool bar
       function displayFileList(){
         fileview = document.getElementById("fileview");
         for(var i = 0; i < image_file_list.length; i++){
