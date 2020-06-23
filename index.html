@@ -1337,6 +1337,10 @@
         }
       }
 
+      //note to future self: maybe the undo all changes function IS possible.
+      //Try to delete the cacheAnnotations at the end of the function.
+      //If you move to an other image and return back to the one where a pose has been deleted it is possible to restore the annotations
+
       //function to delete whole selected pose
       function deletePose(){
         if(confirm("Are you shure you want to delete this pose? You cannot undo this step and other changes made on this image!")){
@@ -1368,7 +1372,7 @@
               svg.childNodes[i].setAttributeNS(null, "id", newId);
             }
           }
-          //disable deletion button 
+          //disable deletion button
           document.getElementById("poseDelButton").disabled = true;
         }
       }
