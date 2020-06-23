@@ -386,13 +386,14 @@
             }
           }
         }
-
+        //select whole pose and not just one point
         function selectPose(evt){
           console.log("Select Pose Start");
           selectedPoseElements = [];
           if(evt.target.classList.contains("point")){
             selectedElement = evt.target;
 
+            //get pose id of clicked point
             let pointId = selectedElement.getAttribute("id");
             let ids = pointId.split(" ");
             let pointschemaId = ids[1];
@@ -400,6 +401,7 @@
 
             let svg = document.getElementById("svg");
 
+            //get all svg elements with the same pose id and save them in selectedPoseElements array
             for(let i = 0; i < svg.children.length; i++){
               let tempElementId = svg.children[i].getAttribute("id");
               let idsTemp = tempElementId.split(" ");
@@ -410,6 +412,8 @@
                 svg.children[i].removeAttributeNS(null, "style");
               }
             }
+
+            //enable delete button if user selected a pose (clicked on a point on svg)
             if(selectedPoseElements){
                 console.log(selectedPoseElements);
                 let btn = document.getElementById("poseDelButton");
@@ -1333,38 +1337,38 @@
         }
       }
 
+      //function to delete whole selected pose
       function deletePose(){
-        if(confirm("Are you shure you want to delete this pose? You cannot undo this step.")){
+        if(confirm("Are you shure you want to delete this pose? You cannot undo this step and other changes made on this image!")){
           cacheAnnotations();
-          console.log("Selected Pose Elements:");
-          console.log(selectedPoseElements);
+          //get pose id of selected pose
           let elId = selectedPoseElements[0].getAttributeNS(null, "id");
           let ids = elId.split(" ");
-          console.log("Before");
-          console.log(unsavedChanges);
+          //remove pose out of annotations
           let tempClone = Object.assign({}, unsavedChanges);
           tempClone[current_image_id]["people"].splice(parseInt(ids[0]),1)[0];
           unsavedChanges = Object.assign({}, tempClone);
-          console.log("After");
-          console.log(unsavedChanges);
+
+          //remove all svg elements of pose
           for(let i = 0; i < selectedPoseElements.length; i++){
             selectedPoseElements[i].remove();
           }
 
+          //update ids of svg elements that are left accordingly to the new index of annotation array
           let svg = document.getElementById("svg");
           for(let i = 0; i < svg.childNodes.length; i++){
             let tempElId= svg.childNodes[i].getAttributeNS(null, "id");
             let tempIds = tempElId.split(" ");
             let tempPoseId = parseInt(tempIds[0]);
-            console.log(tempPoseId);
+
             if(tempPoseId > parseInt(ids[0])){
               let newPoseId = tempPoseId -1;
               let newId = newPoseId.toString() + " " + tempIds[1];
-              console.log(newId);
+
               svg.childNodes[i].setAttributeNS(null, "id", newId);
             }
           }
-
+          //disable deletion button 
           document.getElementById("poseDelButton").disabled = true;
         }
       }
