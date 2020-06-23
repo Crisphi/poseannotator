@@ -2,13 +2,13 @@
 
 ## Currently working on
 
-* selection of whole pose (deletion / movement)
+* possibility of adding new points without violating bodyschema rules --> fix new issues
 
 ## To Do's
 
 * pretty user interface
 * Settings menu
-* possibility of adding new points without violating bodyschema rules --> fix new issues
+* moving whole pose
 
 
 * fix issues with nightly firefox browser / improve browser compatibility
@@ -40,9 +40,11 @@
   * Undo recent changes
   * Undo all made changes on specific imag
   * Delete specific Point completely
+  * Deletion of whole pose
 
   ### Diverse
   * Key controls
   * Show file list in toolbar
   * Change color of annotations for better contrast
   * Show wich files have been already checked
+  * Selection of whole pose (deletion / movement)
