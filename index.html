@@ -69,7 +69,7 @@
         stroke: black;
       }
 
-      #createDescr{
+      #createDescr, #poseDelButton{
         display:none;
       }
 
@@ -115,8 +115,14 @@
           <button type="button" id="resetButton" onclick="toggleResetMode(!resetMode);">Reset Mode</button>
           <button type="button" id="createButton" onclick="toggleCreationMode(!creationMode);">Creation Mode</button>
           <button type="button" id="deleteButton" onclick="toggleDeletionMode(!deletionMode);">Deletion Mode</button>
+          <button type="button" id="selectButton" onclick="toggleSelectionMode(!selectionMode);">Selection Mode</button>
           <div id="optionsContainer">
-            <p id="createDescr">Possible Points to add (klick on joint where a part of the pose is missing):</p>
+            <div id="createDescr">
+              <span> Possible Points to add (klick on joint where a part of the pose is missing):</span> </br>
+            </div>
+            <div id="poseDelDescr">
+              <button type="button" id="poseDelButton" onclick="deletePose();" disabled = true>Delete Pose</button>
+            </div>
           </div>
         </div>
         <div id="files">Files</div>
@@ -159,10 +165,13 @@
       var working_file_list = {};
       var working_data = {};
 
+      var selectedPoseElements = [];
+
       var color = "black";
       var resetMode = false;
       var creationMode = false;
       var deletionMode = false;
+      var selectionMode = false;
 
       var bodyparts = {};
 
@@ -239,6 +248,9 @@
         }else if(event.keyCode == 82){
           console.log("r was pressed");
           toggleResetMode(!resetMode);
+        }else if(event.keyCode == 83){
+          console.log("s was pressed");
+          toggleSelectionMode(!selectionMode);
         }
       });
 
@@ -257,6 +269,8 @@
             addAnnotation(event);
           }else if(deletionMode){
             deletePoint(event);
+          }else if(selectionMode){
+            selectPose(event);
           }else{
             startDrag(event);
           }
@@ -268,9 +282,9 @@
 
         //currently not working! function for adding new points to an uncomplete bodyschema
         function addAnnotation(evt){
-          var descr = document.getElementById("createDescr");
-          var svg = document.getElementById("svg");
-          var children = svg.childNodes;
+          let descr = document.getElementById("createDescr");
+          let svg = document.getElementById("svg");
+          let children = svg.childNodes;
           if(evt.target.classList.contains("point")){
             if(highlighted){
               highlighted.removeAttribute("style");
@@ -279,26 +293,26 @@
             selectedElement = evt.target;
             highlighted = selectedElement;
             selectedElement.setAttributeNS(null, "style", "fill: red;")
-            var pointId = selectedElement.getAttribute("id");
-            var ids = pointId.split(" ");
-            var pointschemaId = ids[1];
-            var poseId = ids[0];
+            let pointId = selectedElement.getAttribute("id");
+            let ids = pointId.split(" ");
+            let pointschemaId = ids[1];
+            let poseId = ids[0];
 
-            for(var i in bodyschema){
+            for(let i in bodyschema){
               if(bodyschema[i][0] == pointschemaId){
                 //console.log(bodyschema[i]);
-                for(var j = 0; j < children.length; j++){
+                for(let j = 0; j < children.length; j++){
                   if(children[j].classList.contains("point")){
-                    var pointId2 = children[j].getAttribute("id");
-                    var ids2 = pointId2.split(" ");
+                    let pointId2 = children[j].getAttribute("id");
+                    let ids2 = pointId2.split(" ");
                     if((ids2[1] == bodyschema[i][1]) && (ids2[0] == ids[0])){
                       console.log(children[j].getAttribute("cx"));
-                      var xTemp = parseInt(children[j].getAttribute("cx"));
-                      var yTemp = parseInt(children[j].getAttribute("cy"));
+                      let xTemp = parseInt(children[j].getAttribute("cx"));
+                      let yTemp = parseInt(children[j].getAttribute("cy"));
                       if((xTemp == "0") && (yTemp == "0")){
                         console.log(xTemp, yTemp);
                         console.log(i);
-                        var btn = document.createElement("BUTTON");
+                        let btn = document.createElement("BUTTON");
                         btn.innerHTML = i;
                         btn.setAttribute("pointId", pointId);
                         btn.setAttribute("onclick", "fireButton(this);")
@@ -320,13 +334,13 @@
             if(selectedElement.hasAttributeNS(null,"transform")){
               selectedElement.removeAttributeNS(null, "transform");
 
-              var lineIds = getLineIds();
+              let lineIds = getLineIds();
 
-              var x = selectedElement.getAttributeNS(null, "cx");
-              var y = selectedElement.getAttributeNS(null, "cy");
-              for(var k in lineIds){
+              let x = selectedElement.getAttributeNS(null, "cx");
+              let y = selectedElement.getAttributeNS(null, "cy");
+              for(let k in lineIds){
                 //console.log(k);
-                var line = document.getElementById(k.toString());
+                let line = document.getElementById(k.toString());
 
                 if(line){
                   if(lineIds[k] == 0){
@@ -360,11 +374,11 @@
               selectedElement.setAttributeNS(null, "cy", 0);
 
               //get all lines that connect to point
-              var lineIds = getLineIds();
+              let lineIds = getLineIds();
               //delete all connected lines
-              for(var k in lineIds){
+              for(let k in lineIds){
                 //console.log(k);
-                var line = document.getElementById(k.toString());
+                let line = document.getElementById(k.toString());
                 if(line){
                   line.remove();
                 }
@@ -372,9 +386,43 @@
             }
           }
         }
+
+        function selectPose(evt){
+          console.log("Select Pose Start");
+          selectedPoseElements = [];
+          if(evt.target.classList.contains("point")){
+            selectedElement = evt.target;
+
+            let pointId = selectedElement.getAttribute("id");
+            let ids = pointId.split(" ");
+            let pointschemaId = ids[1];
+            let poseId = ids[0];
+
+            let svg = document.getElementById("svg");
+
+            for(let i = 0; i < svg.children.length; i++){
+              let tempElementId = svg.children[i].getAttribute("id");
+              let idsTemp = tempElementId.split(" ");
+              if(poseId == idsTemp[0]){
+                selectedPoseElements.push(svg.children[i]);
+                svg.children[i].setAttributeNS(null, "style", "stroke: blue;");
+              }else{
+                svg.children[i].removeAttributeNS(null, "style");
+              }
+            }
+            if(selectedPoseElements){
+                console.log(selectedPoseElements);
+                let btn = document.getElementById("poseDelButton");
+                btn.disabled = false;
+            }else{
+              console.log("An Error occured. Please look at function selectPose(evt) in code.");
+            }
+          }
+        }
+
         //track mouseposition on screen if mouse interacts with svg
         function getMousePos(evt){
-          var ctm = svg.getScreenCTM();
+          let ctm = svg.getScreenCTM();
           if(evt.touches){
             evt = evt.touches[0];
           }
@@ -386,7 +434,7 @@
 
         // handles mousedown event, starts dragging process
         function startDrag(evt){
-          var svgtemp = document.getElementById("svg");
+          let svgtemp = document.getElementById("svg");
 
           //set boundaries to Imagesize so that it is impossible to drag points out of view
           boundaryX2 = svgtemp.width.baseVal.value;
@@ -402,10 +450,10 @@
             offset = getMousePos(evt);
             //console.log(offset);
 
-            var transforms = selectedElement.transform.baseVal;
+            let transforms = selectedElement.transform.baseVal;
 
             if(transforms.length === 0 || transforms.getItem(0).type !== SVGTransform.SVG_TRANSFORM_TRANSLATE){
-              var translate = svg.createSVGTransform();
+              let translate = svg.createSVGTransform();
               translate.setTranslate(0,0);
               selectedElement.transform.baseVal.insertItemBefore(translate,0);
             }
@@ -430,9 +478,9 @@
         function drag(evt){
           if(selectedElement){
             evt.preventDefault();
-            var coord = getMousePos(evt);
-            var dx = coord.x - offset.x;
-            var dy = coord.y - offset.y;
+            let coord = getMousePos(evt);
+            let dx = coord.x - offset.x;
+            let dy = coord.y - offset.y;
 
             //make shure svg element stays within boundaries
             if(dx < minX){
@@ -448,11 +496,11 @@
             }
             //set new position for svg point
             transform.setTranslate(dx, dy);
-            var lineIds = getLineIds();
+            let lineIds = getLineIds();
 
-            for(var k in lineIds){
+            for(let k in lineIds){
               //console.log(k);
-              var line = document.getElementById(k.toString());
+              let line = document.getElementById(k.toString());
 
               if(line){
                 if(lineIds[k] == 0){
@@ -472,17 +520,17 @@
         }
 
         //set new position for svg lines if selected point is one of the coordinates
-        function getLineIds (){
+        function getLineIds(){
           //get point id and bodyschema ids for identifing correct lines
-          var pointId = selectedElement.getAttribute("id");
-          var ids = pointId.split(" ");
-          var pointschemaId = ids[1];
-          var poseId = ids[0];
+          let pointId = selectedElement.getAttribute("id");
+          let ids = pointId.split(" ");
+          let pointschemaId = ids[1];
+          let poseId = ids[0];
           //console.log("Pointschema Id: " + pointschemaId);
-          var lineIds = {};
+          let lineIds = {};
           //get all bodyparts that have the right identifier
-          for(var i in bodyschema){
-            for(var j = 0; j < bodyschema[i].length; j++){
+          for(let i in bodyschema){
+            for(let j = 0; j < bodyschema[i].length; j++){
               if(bodyschema[i][j] == pointschemaId){
                 lineIds[poseId + " " + i] = j;
               }
@@ -499,12 +547,12 @@
       //currently not working a failed try to create points of specific bodyparts
       function fireButton(btn){
         console.log("fired Button event");
-        var pointId = btn.getAttribute("pointId");
-        var point = document.getElementById(pointId);
+        let pointId = btn.getAttribute("pointId");
+        let point = document.getElementById(pointId);
 
-        var eventDown = new MouseEvent("mousedown");
+        let eventDown = new MouseEvent("mousedown");
         point.dispatchEvent(eventDown);
-        var eventMove = new MouseEvent("mousemove");
+        let eventMove = new MouseEvent("mousemove");
       }
 
         //Not finished will be included in future versions: load json file if the annotations are saved in only one json file
@@ -519,14 +567,14 @@
         //console.log(meta_file_list);
 
         //get name of json file through the name of the image file
-        var id = current_image_source.split(".")[0];
+        let id = current_image_source.split(".")[0];
         //create a new regex pattern
-        var patt = new RegExp(id + "_");
+        let patt = new RegExp(id + "_");
 
         //console.log(id);
         //search in loaded meta files for the correct file via file name and save file in meta_id
-        for(var i = 0; i < meta_file_list.length; i++){
-          var d = meta_file_list[i];
+        for(let i = 0; i < meta_file_list.length; i++){
+          let d = meta_file_list[i];
           if(patt.test(d.name)){
             //console.log(d);
             meta_id = d;
@@ -535,7 +583,7 @@
 
         //if file found launch a file reader to get content of file as a string array
         if(meta_id){
-          var reader = new FileReader();
+          let reader = new FileReader();
           reader.onload = getAnnotations;
           //console.log(meta_id);
           reader.readAsText(meta_id);
@@ -544,7 +592,7 @@
         function getAnnotations(t, callback = function(){loadAnnotations();}){
           //console.log(callback);
           let lines = t.target.result;
-          var a = JSON.parse(lines);
+          let a = JSON.parse(lines);
           annotations = $.extend(annotations,a);
           //console.log("Annotations:");
           //console.log(annotations);
@@ -598,18 +646,18 @@
       //display image
       function loadImage(){
         destroySvgEl();
-        var currentFileLink = document.getElementById(String(current_image_id) + "_link");
+        let currentFileLink = document.getElementById(String(current_image_id) + "_link");
         currentFileLink.style.color = "red";
 
         if(!image_file_list[current_image_id]){
           //console.log(current_image_id);
           alert("An Error occured! No Image Id found.")
         }else{
-          var imag = document.getElementById("image");
+          let imag = document.getElementById("image");
           current_image_source = image_file_list[current_image_id].name;
 
           if(imag.complete){
-            var new_image = new Image();
+            let new_image = new Image();
             new_image.id = "image";
             new_image.src = IMG_FILEPATH + current_image_source;
             imag.parentNode.insertBefore(new_image, imag);
@@ -640,7 +688,7 @@
           annotations = {};
           unsavedChanges = {};
 
-          var reader = new FileReader();
+          let reader = new FileReader();
           reader.onload = getAnnotations;
           console.log(working_file_list[0]);
           reader.readAsText(working_file_list[0]);
@@ -649,9 +697,9 @@
           function getAnnotations(t, callback = function(){
               console.log("Working Data:");
               console.log(working_data);
-              var imageListTemp = [];
-              var metaListTemp = [];
-              for(var i in working_data){
+              let imageListTemp = [];
+              let metaListTemp = [];
+              for(let i in working_data){
                 imageListTemp[i] = {"name" : working_data[i].image_source};
                 metaListTemp[i] = {"name" : working_data[i].meta_source};
               }
@@ -668,7 +716,7 @@
             }){
             //console.log(callback);
             let lines = t.target.result;
-            var a = JSON.parse(lines);
+            let a = JSON.parse(lines);
             working_data = $.extend(working_data,a);
             callback();
           }
@@ -676,9 +724,9 @@
       }
 
       function loadWorkingMeta(){
-        var checkObject = document.getElementById("checked");
+        let checkObject = document.getElementById("checked");
 
-        for(var i in working_data){
+        for(let i in working_data){
           if(current_image_source == working_data[i].image_source){
             annotations["people"] = Object.values(working_data[i].people);
             if(working_data[i].checked == true){
@@ -698,17 +746,25 @@
         if(current == "resetMode"){
           creationMode = false;
           deletionMode = false;
+          selectionMode = false;
         }else if(current == "deletionMode"){
           creationMode = false;
           resetMode = false;
+          selectionMode = false;
         }else if(current == "creationMode"){
+          resetMode = false;
+          deletionMode = false;
+          selectionMode = false;
+        }else if(current == "selectionMode"){
+          creationMode = false;
           resetMode = false;
           deletionMode = false;
         }else{
           creationMode = false;
           resetMode = false;
           deletionMode = false;
-          var currentFileLink = document.getElementById(String(current_image_id) + "_link");
+          selectionMode = false;
+          let currentFileLink = document.getElementById(String(current_image_id) + "_link");
           currentFileLink.style.color = "";
         }
       }
@@ -782,39 +838,40 @@
 
       // load annotations if there are multiple json files
       function loadAnnotations(){
-        var results = [];
-        var checkObject = document.getElementById("checked");
+        let results = [];
+        let p;
+        let checkObject = document.getElementById("checked");
         if(current_image_id in unsavedChanges){
-          var p = unsavedChanges[current_image_id]["people"];
+          p = unsavedChanges[current_image_id]["people"];
           checkObject.innerHTML = "Yes";
         }else{
-          var p = annotations["people"];
+          p = annotations["people"];
           if(!workingfile){
             checkObject.innerHTML = "No";
           }
         }
         //console.log(p);
         //save pose keypoints in results
-        for(var i = 0; i < p.length; i++){
-          var t = p[i]["pose_keypoints_2d"];
+        for(let i = 0; i < p.length; i++){
+          let t = p[i]["pose_keypoints_2d"];
           //console.log(t);
           results.push(t);
         }
         console.log("Results:");
         console.log(results);
         //start disply for each pose
-        for(var j= 0; j < results.length; j++){
+        for(let j= 0; j < results.length; j++){
           displayAnnotations(results[j], j);
         }
       }
 
       //prepare pose keypoints for display as svg
-      function displayAnnotations(r, counter){
-        var counter = counter;
-        var points = [];
+      function displayAnnotations(r, c){
+        let counter = c;
+        let points = [];
 
-      //delete z variable (keypoint schema x,y,z with z = confidence level)
-        for(var i = 0; i < r.length; i++){
+      //delete z letiable (keypoint schema x,y,z with z = confidence level)
+        for(let i = 0; i < r.length; i++){
           if((i+1) % 3 != 0){
             points.push(r[i]);
           }
@@ -823,9 +880,9 @@
         //console.log("Points:");
         //console.log(points);
 
-        var newpoints = {};
-        for(var i = 0; i < points.length; i += 2){
-            var id = i/2;
+        let newpoints = {};
+        for(let i = 0; i < points.length; i += 2){
+            let id = i/2;
             newpoints[id] = [points[i], points[i+1]];
         }
         //console.log(newpoints);
@@ -858,7 +915,7 @@
           footR3: [newpoints[14], newpoints[21]]
         }
         //delete all points that have 0 value (if 0 bodypart is not assigned)
-        for(var i in bodyparts){
+        for(let i in bodyparts){
           //console.log("id: " + i);
           if((bodyparts[i][0][0] == 0) || (bodyparts[i][1][1] == 0)){
             delete bodyparts[i];
@@ -867,32 +924,36 @@
         //console.log(bodyparts);
 
         //stringify point arrays and start line creation
-        for(var id in bodyparts){
+        let x1;
+        let y1;
+        let x2;
+        let y2;
+        for(let id in bodyparts){
           if((bodyparts[id][0])&& (bodyparts[id][1])){
-            var x1 = bodyparts[id][0][0].toString();
-            var y1 = bodyparts[id][0][1].toString();
-            var x2 = bodyparts[id][1][0].toString();
-            var y2 = bodyparts[id][1][1].toString();
+            x1 = bodyparts[id][0][0].toString();
+            y1 = bodyparts[id][0][1].toString();
+            x2 = bodyparts[id][1][0].toString();
+            y2 = bodyparts[id][1][1].toString();
           }
-          var idtemp = counter.toString() + " " + id.toString();
+          let idtemp = counter.toString() + " " + id.toString();
           createLine(x1, y1, x2, y2, idtemp);
         }
 
-        for(var id in newpoints){
-          var x = newpoints[id][0];
-          var y = newpoints[id][1];
-          var strx = x.toString();
-          var stry = y.toString();
+        for(let id in newpoints){
+          let x = newpoints[id][0];
+          let y = newpoints[id][1];
+          let strx = x.toString();
+          let stry = y.toString();
           //console.log(strx + " " + stry);
-          var idtemp = counter.toString() + " " + id.toString();
+          let idtemp = counter.toString() + " " + id.toString();
           createPoint(strx, stry, idtemp);
         }
       }
 
       //creates a new svg point (circle) and sets all the attributes to the correct values
       function createPoint(x, y, id){
-        var point = document.createElementNS(svgNS, "circle");
-        var classes = color + " point";
+        let point = document.createElementNS(svgNS, "circle");
+        let classes = color + " point";
         point.setAttributeNS(null,"cx", x);
         point.setAttributeNS(null, "cy", y);
         point.setAttributeNS(null, "r", "5");
@@ -904,7 +965,7 @@
 
       //creates a new svg line and sets all the attributes to the correct values
       function createLine(x1, y1, x2, y2, id){
-        var line = document.createElementNS(svgNS, "line");
+        let line = document.createElementNS(svgNS, "line");
         line.setAttributeNS(null, "x1", x1);
         line.setAttributeNS(null, "y1", y1);
         line.setAttributeNS(null, "x2", x2);
@@ -918,7 +979,7 @@
 
       //destroy all displayed svg elements
       function destroySvgEl(){
-        var svg = document.getElementById("svg");
+        let svg = document.getElementById("svg");
         while (svg.firstChild) {
           svg.removeChild(svg.lastChild);
         }
@@ -930,55 +991,58 @@
 
       //change css class of svg elements to change appearance for the current and following annotations
       function changeAnnoColor(){
-        var svg = document.getElementById("svg");
+        let svg = document.getElementById("svg");
         if(color == "black"){
           color = "orange"
         }else{
           color ="black"
         }
-        for(var i = 0; i < svg.childNodes.length; i++){
+        for(let i = 0; i < svg.childNodes.length; i++){
           svg.childNodes[i].style.stroke = color;
         }
       }
 
       //function for chaching the made changes
       function cacheAnnotations(){
-        var svg = document.getElementById("svg");
-        var children = svg.childNodes;
-        var pointcounter = 0;
+        let svg = document.getElementById("svg");
+        let children = svg.childNodes;
+        let pointcounter = 0;
+        let x;
+        let y;
+        let cx;
+        let cy;
 
-
-        for(var i = 0; i < children.length; i++){
+        for(let i = 0; i < children.length; i++){
           if(children[i].classList.contains("point")){
 
-            var cx = children[i].getAttribute("cx");
-            var cy = children[i].getAttribute("cy");
+            cx = children[i].getAttribute("cx");
+            cy = children[i].getAttribute("cy");
 
             // flatten the transformations made to the svg points to get new coordinates
             if(children[i].transform.baseVal.length != 0){
-              var matrix = children[i].transform.baseVal.consolidate().matrix;
-              var cache = svg.createSVGPoint();
+              let matrix = children[i].transform.baseVal.consolidate().matrix;
+              let cache = svg.createSVGPoint();
               cache.x = cx;
               cache.y = cy;
               cache = cache.matrixTransform(matrix);
-              var x = cache.x;
-              var y = cache.y;
+              x = cache.x;
+              y = cache.y;
             }else{
-              var x = cx;
-              var y = cy;
+              x = cx;
+              y = cy;
             }
 
             //get Ids to save coordinates in the given schema and at the right index
-            var pointId = children[i].getAttribute("id");
-            var ids = pointId.split(" ");
-            var pointschemaId = ids[1];
-            var poseId = ids[0];
+            let pointId = children[i].getAttribute("id");
+            let ids = pointId.split(" ");
+            let pointschemaId = ids[1];
+            let poseId = ids[0];
             //console.log("Ids: " + "point: " + pointschemaId + " pose: "+ poseId);
 
-            var intPose = parseInt(poseId);
-            var intId = parseInt(pointschemaId);
-            var id1 = (intId * 2) + pointcounter;
-            var id2 = id1 + 1;
+            let intPose = parseInt(poseId);
+            let intId = parseInt(pointschemaId);
+            let id1 = (intId * 2) + pointcounter;
+            let id2 = id1 + 1;
 
             if(intId == 24){
               pointcounter = 0;
@@ -1009,13 +1073,13 @@
 
       //enables/disables creation mode and sets color of poses to a different value for recognition
       function toggleCreationMode(on){
-        var descr = document.getElementById("createDescr");
+        let descr = document.getElementById("createDescr");
         disableModes("creationMode");
-        var svg = document.getElementById("svg");
+        let svg = document.getElementById("svg");
         if(on){
           creationMode = true;
           descr.style.display = "block";
-          for(var i = 0; i < svg.childNodes.length; i++){
+          for(let i = 0; i < svg.childNodes.length; i++){
             svg.childNodes[i].setAttributeNS(null, "style", "stroke: green;");
           }
         }else{
@@ -1027,7 +1091,7 @@
           }
 
           descr.style.display = "none";
-          for(var i = 0; i < svg.childNodes.length; i++){
+          for(let i = 0; i < svg.childNodes.length; i++){
             svg.childNodes[i].removeAttributeNS(null, "style");
           }
           deleteDescr();
@@ -1037,15 +1101,15 @@
       //enables/disables reset mode and sets color of poses to a different value for recognition
       function toggleResetMode(on){
         disableModes("resetMode");
-        var svg = document.getElementById("svg");
+        let svg = document.getElementById("svg");
         if(on){
           resetMode = true;
-          for(var i = 0; i < svg.childNodes.length; i++){
+          for(let i = 0; i < svg.childNodes.length; i++){
             svg.childNodes[i].setAttributeNS(null, "style", "stroke: purple;");
           }
         }else{
           resetMode = false;
-          for(var i = 0; i < svg.childNodes.length; i++){
+          for(let i = 0; i < svg.childNodes.length; i++){
             svg.childNodes[i].removeAttributeNS(null, "style");
           }
         }
@@ -1054,15 +1118,36 @@
       //enables/disables deletion mode and sets color of poses to a different value for recognition
       function toggleDeletionMode(on){
         disableModes("deletionMode");
-        var svg = document.getElementById("svg");
+        let svg = document.getElementById("svg");
         if(on){
           deletionMode = true;
-          for(var i = 0; i < svg.childNodes.length; i++){
+          for(let i = 0; i < svg.childNodes.length; i++){
             svg.childNodes[i].setAttributeNS(null, "style", "stroke: red;");
           }
         }else{
           deletionMode = false;
-          for(var i = 0; i < svg.childNodes.length; i++){
+          for(let i = 0; i < svg.childNodes.length; i++){
+            svg.childNodes[i].removeAttributeNS(null, "style");
+          }
+        }
+      }
+
+      function toggleSelectionMode(on){
+        disableModes("selectionMode");
+        let svg = document.getElementById("svg");
+        let delBtn = document.getElementById("poseDelButton");
+        if(on){
+          selectionMode = true;
+          for(let i = 0; i < svg.childNodes.length; i++){
+            svg.childNodes[i].setAttributeNS(null, "style", "stroke: blue;");
+          }
+          delBtn.style.display = "block";
+          delBtn.disabled = true;
+        }else{
+          selectionMode = false;
+          delBtn.disabled = true;
+          delBtn.style.display = "none";
+          for(let i = 0; i < svg.childNodes.length; i++){
             svg.childNodes[i].removeAttributeNS(null, "style");
           }
         }
@@ -1070,8 +1155,8 @@
 
       //deletes additional buttons for distinct bodyparts in the tool area added creation mode
       function deleteDescr(){
-        var descr = document.getElementById("createDescr");
-        for(var j = 1; j < descr.childNodes.length; j++){
+        let descr = document.getElementById("createDescr");
+        for(let j = 1; j < descr.childNodes.length; j++){
           descr.childNodes[j].remove();
         }
       }
@@ -1081,14 +1166,14 @@
         //save changes on current picture
         cacheAnnotations();
 
-        var exportFile = [];
-        var found = false;
+        let exportFile = [];
+        let found = false;
 
         //checks if there are unsaved Changes
         if(unsavedChanges[0]){
-          for(var i = 0; i < meta_file_list.length; i++){
+          for(let i = 0; i < meta_file_list.length; i++){
             //checks if there are unsaved Changes in the current metadata-file
-            for(var j in unsavedChanges){
+            for(let j in unsavedChanges){
               if(i == j){
                 found = true;
                 //save new metadata in the exportFile array
@@ -1100,25 +1185,25 @@
             }
             //current image has no changes yet
             if(found == false){
-              var meta_name = meta_file_list[i].name;
-              var id = meta_name.split("_")[0];
+              let meta_name = meta_file_list[i].name;
+              let id = meta_name.split("_")[0];
 
               //search for the image that belongs to the metadata
-              var patt = new RegExp(id + ".");
-              var imageTemp;
+              let patt = new RegExp(id + ".");
+              let imageTemp;
 
-              for(var k = 0; k < image_file_list.length; k++){
-                var d = image_file_list[k];
+              for(let k = 0; k < image_file_list.length; k++){
+                let d = image_file_list[k];
                 if(patt.test(d.name)){
                   console.log(d);
                   imageTemp = d;
                 }
               }
               //wait for the results of the file reading process
-              var result = await readFileAsync(meta_file_list[i]);
+              let result = await readFileAsync(meta_file_list[i]);
               //parse current metadata file as json
-              var a = JSON.parse(result);
-              var annotationsTemp = $.extend(annotationsTemp,a);
+              let a = JSON.parse(result);
+              let annotationsTemp = $.extend(annotationsTemp,a);
               console.log(annotationsTemp);
               //save modulated metadata in exportFile array
               exportFile[i] = Object.assign({},annotationsTemp);
@@ -1132,8 +1217,8 @@
           console.log(exportFile);
 
           //set data for download file
-          var filename = "poseannotatorFile.json";
-          var text = JSON.stringify(exportFile);
+          let filename = "poseannotatorFile.json";
+          let text = JSON.stringify(exportFile);
 
           //start download
           download(filename, text);
@@ -1148,20 +1233,20 @@
         //save changes on current picture
         cacheAnnotations();
 
-        var exportFile = [];
-        var found = false;
+        let exportFile = [];
+        let found = false;
 
         //checks if there are unsaved Changes
         if(unsavedChanges[0]){
-          for(var i = 0; i < meta_file_list.length; i++){
+          for(let i = 0; i < meta_file_list.length; i++){
             //checks if there are unsaved Changes in the current metadata-file
-            for(var j in unsavedChanges){
+            for(let j in unsavedChanges){
               if(i == j){
                 found = true;
 
-                var result = await readFileAsync(meta_file_list[i]);
+                let result = await readFileAsync(meta_file_list[i]);
                 //parse current metadata file as json
-                var a = JSON.parse(result);
+                let a = JSON.parse(result);
                 //overwrite metadata with unsavedChanges
                 a["people"] = unsavedChanges[j]["people"];
 
@@ -1171,9 +1256,9 @@
             //current image has no changes yet
             if(found == false){
               //wait for the results of the file reading process
-              var result = await readFileAsync(meta_file_list[i]);
+              let result = await readFileAsync(meta_file_list[i]);
               //parse current metadata file as json
-              var a = JSON.parse(result);
+              let a = JSON.parse(result);
               //save metadata in exportFile array
               exportFile[i] = Object.assign({},a);
             }
@@ -1183,12 +1268,12 @@
           console.log(exportFile);
 
           //create zip element
-          var zip = new JSZip();
+          let zip = new JSZip();
 
           //add all metadata files to zip element
-          for(var i = 0; i < exportFile.length; i++){
-            var text = JSON.stringify(exportFile[i]);
-            var filename = meta_file_list[i]["name"];
+          for(let i = 0; i < exportFile.length; i++){
+            let text = JSON.stringify(exportFile[i]);
+            let filename = meta_file_list[i]["name"];
             zip.file(filename, text);
           }
 
@@ -1222,7 +1307,7 @@
 
       //function for creating a html element that will trigger the download link and destroying the element afterwards
       function download(filename, text){
-        var element = document.createElement("A");
+        let element = document.createElement("A");
         element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
         element.setAttribute("download", filename);
 
@@ -1237,14 +1322,50 @@
       //function for display of file names in tool bar
       function displayFileList(){
         fileview = document.getElementById("fileview");
-        for(var i = 0; i < image_file_list.length; i++){
-          var li = document.createElement("LI");
-          var a = document.createElement("A");
+        for(let i = 0; i < image_file_list.length; i++){
+          let li = document.createElement("LI");
+          let a = document.createElement("A");
           a.setAttribute("href", "javascript:specificImage(" + String(i) + ");");
           a.setAttribute("id", String(i) + "_link");
           a.innerHTML = "(" + String(i + 1) + ") " + String(image_file_list[i].name);
           li.appendChild(a);
           fileview.appendChild(li);
+        }
+      }
+
+      function deletePose(){
+        if(confirm("Are you shure you want to delete this pose? You cannot undo this step.")){
+          cacheAnnotations();
+          console.log("Selected Pose Elements:");
+          console.log(selectedPoseElements);
+          let elId = selectedPoseElements[0].getAttributeNS(null, "id");
+          let ids = elId.split(" ");
+          console.log("Before");
+          console.log(unsavedChanges);
+          let tempClone = Object.assign({}, unsavedChanges);
+          tempClone[current_image_id]["people"].splice(parseInt(ids[0]),1)[0];
+          unsavedChanges = Object.assign({}, tempClone);
+          console.log("After");
+          console.log(unsavedChanges);
+          for(let i = 0; i < selectedPoseElements.length; i++){
+            selectedPoseElements[i].remove();
+          }
+
+          let svg = document.getElementById("svg");
+          for(let i = 0; i < svg.childNodes.length; i++){
+            let tempElId= svg.childNodes[i].getAttributeNS(null, "id");
+            let tempIds = tempElId.split(" ");
+            let tempPoseId = parseInt(tempIds[0]);
+            console.log(tempPoseId);
+            if(tempPoseId > parseInt(ids[0])){
+              let newPoseId = tempPoseId -1;
+              let newId = newPoseId.toString() + " " + tempIds[1];
+              console.log(newId);
+              svg.childNodes[i].setAttributeNS(null, "id", newId);
+            }
+          }
+
+          document.getElementById("poseDelButton").disabled = true;
         }
       }
     </script>
