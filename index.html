@@ -119,7 +119,7 @@
           <div id="optionsContainer">
             <div id="createDescr">
               <span> Possible Points to add (klick on joint where a part of the pose is missing):</span> </br>
-              <svg id="xsvg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="225 140 180 503.5" width="150px">
+              <svg id="xsvg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="225 140 180 503.5" width="150px" onload="draggable(evt);">
                 <line x1="304.844" y1="158.085" x2="286.6189880371094" y2="146.37899780273438" class="xl black" id="xhead1" onload="pointchange(evt)"></line>
                 <line x1="304.844" y1="158.085" x2="321.30999755859375" y2="146.09800720214844" class="xl" id="xhead2" onload="pointchange(evt)"></line>
                 <line x1="286.6189880371094" y1="146.37899780273438" x2="272.69500732421875" y2="164.41000366210938" class="xl black" id="xhead3" onload="pointchange(evt)"></line>
@@ -144,31 +144,31 @@
                 <line x1="342.0530090332031" y1="614.6240234375" x2="368.5419921875" y2="627.5029907226562" class="xl black" id="xfootR1" onload="pointchange(evt)"></line>
                 <line x1="368.5419921875" y1="627.5029907226562" x2="393.6449890136719" y2="618.614013671875" class="xl black" id="xfootR2" onload="pointchange(evt)"></line>
                 <line x1="342.0530090332031" y1="614.6240234375" x2="324.5820007324219" y2="628.4340209960938" class="xl black" id="xfootR3" onload="pointchange(evt)"></line>
-                <circle cx="304.844" cy="158.085" r="5" class="xp black point" id="x0"></circle>
-                <circle cx="309.149" cy="217.125" r="5" class="xp black point" id="x1"></circle>
-                <circle cx="265.398" cy="214.965" r="5" class="xp black point" id="x2"></circle>
-                <circle cx="241.82000732421875" cy="296.8479919433594" r="5" class="xp black point" id="x3"></circle>
-                <circle cx="234.33299255371094" cy="372.14501953125" r="5" class="xp black point" id="x4"></circle>
-                <circle cx="357.325" cy="217.193" r="5" class="xp black point" id="x5"></circle>
-                <circle cx="379.21" cy="302.628" r="5" class="xp black point" id="x6"></circle>
-                <circle cx="382.9330139160156" cy="369.89801025390625" r="5" class="xp black point" id="x7"></circle>
-                <circle cx="311.356" cy="377.002" r="5" class="xp black point" id="x8"></circle>
-                <circle cx="278.532" cy="377.052" r="5" class="xp black point" id="x9"></circle>
-                <circle cx="280.661" cy="501.84" r="5" class="xp black point" id="x10"></circle>
-                <circle cx="285.015" cy="620.016" r="5" class="xp black point" id="x11"></circle>
-                <circle cx="344.174" cy="374.887" r="5" class="xp black point" id="x12"></circle>
-                <circle cx="344.244" cy="497.407" r="5" class="xp black point" id="x13"></circle>
-                <circle cx="342.0530090332031" cy="614.6240234375" r="5" class="xp black point" id="x14"></circle>
-                <circle cx="286.6189880371094" cy="146.37899780273438" r="5" class="xp black point" id="x15"></circle>
-                <circle cx="321.30999755859375" cy="146.09800720214844" r="5" class="xp black point" id="x16"></circle>
-                <circle cx="272.69500732421875" cy="164.41000366210938" r="5" class="xp black point" id="x17"></circle>
-                <circle cx="337.718994140625" cy="160.0659942626953" r="5" class="xp black point" id="x18"></circle>
-                <circle cx="368.5419921875" cy="627.5029907226562" r="5" class="xp black point" id="x19"></circle>
-                <circle cx="393.6449890136719" cy="618.614013671875" r="5" class="xp black point" id="x20"></circle>
-                <circle cx="324.5820007324219" cy="628.4340209960938" r="5" class="xp black point" id="x21"></circle>
-                <circle cx="267.1669921875" cy="630.7310180664062" r="5" class="xp black point" id="x22"></circle>
-                <circle cx="244.47198486328125" cy="619.89501953125" r="5" class="xp black point" id="x23"></circle>
-                <circle cx="303.4849853515625" cy="636.5659790039062" r="5" class="xp black point" id="x24"></circle>
+                <circle cx="304.844" cy="158.085" r="5" class="xp black" id="x0"></circle>
+                <circle cx="309.149" cy="217.125" r="5" class="xp black" id="x1"></circle>
+                <circle cx="265.398" cy="214.965" r="5" class="xp black" id="x2"></circle>
+                <circle cx="241.82000732421875" cy="296.8479919433594" r="5" class="xp black" id="x3"></circle>
+                <circle cx="234.33299255371094" cy="372.14501953125" r="5" class="xp black" id="x4"></circle>
+                <circle cx="357.325" cy="217.193" r="5" class="xp black" id="x5"></circle>
+                <circle cx="379.21" cy="302.628" r="5" class="xp black" id="x6"></circle>
+                <circle cx="382.9330139160156" cy="369.89801025390625" r="5" class="xp black" id="x7"></circle>
+                <circle cx="311.356" cy="377.002" r="5" class="xp black" id="x8"></circle>
+                <circle cx="278.532" cy="377.052" r="5" class="xp black" id="x9"></circle>
+                <circle cx="280.661" cy="501.84" r="5" class="xp black" id="x10"></circle>
+                <circle cx="285.015" cy="620.016" r="5" class="xp black" id="x11"></circle>
+                <circle cx="344.174" cy="374.887" r="5" class="xp black" id="x12"></circle>
+                <circle cx="344.244" cy="497.407" r="5" class="xp black" id="x13"></circle>
+                <circle cx="342.0530090332031" cy="614.6240234375" r="5" class="xp black" id="x14"></circle>
+                <circle cx="286.6189880371094" cy="146.37899780273438" r="5" class="xp black" id="x15"></circle>
+                <circle cx="321.30999755859375" cy="146.09800720214844" r="5" class="xp black" id="x16"></circle>
+                <circle cx="272.69500732421875" cy="164.41000366210938" r="5" class="xp black" id="x17"></circle>
+                <circle cx="337.718994140625" cy="160.0659942626953" r="5" class="xp black" id="x18"></circle>
+                <circle cx="368.5419921875" cy="627.5029907226562" r="5" class="xp black" id="x19"></circle>
+                <circle cx="393.6449890136719" cy="618.614013671875" r="5" class="xp black" id="x20"></circle>
+                <circle cx="324.5820007324219" cy="628.4340209960938" r="5" class="xp black" id="x21"></circle>
+                <circle cx="267.1669921875" cy="630.7310180664062" r="5" class="xp black" id="x22"></circle>
+                <circle cx="244.47198486328125" cy="619.89501953125" r="5" class="xp black" id="x23"></circle>
+                <circle cx="303.4849853515625" cy="636.5659790039062" r="5" class="xp black" id="x24"></circle>
               </svg>
             </div>
             <div id="poseDelDescr">
@@ -254,8 +254,13 @@
       };
 
       var highlighted;
+      var highlightedModel = [];
       var creating;
-      var creationPoint;
+      var creationId;
+      var creationId2;
+      var creationCoordX;
+      var creationCoordY;
+      var creationPoseId;
       var selectedElement;
       var offset;
       var transform;
@@ -312,11 +317,12 @@
         //set event listeners for mouse movement
         svg.addEventListener("mousedown", function(event){
           if(creating){
+            createPosePart(event);
             creating = false;
-            endDrag(event);
           }else if(resetMode){
             undoChanges(event);
           }else if(creationMode){
+            selectAddingPoint(event);
             addAnnotation(event);
           }else if(deletionMode){
             deletePoint(event);
@@ -346,39 +352,37 @@
             selectedElement.setAttributeNS(null, "style", "fill: red;")
             let pointId = selectedElement.getAttribute("id");
             let ids = pointId.split(" ");
-            let pointschemaId = ids[1];
-            let poseId = ids[0];
+            creationId2 = ids[1];
+            creationPoseId = ids[0];
+            creationCoordX = selectedElement.getAttributeNS(null, "cx");
+            creationCoordY = selectedElement.getAttributeNS(null, "cy");
 
             for(let i in bodyschema){
-              if(bodyschema[i][0] == pointschemaId){
+              if(bodyschema[i][0] == creationId2){
                 //console.log(bodyschema[i]);
                 for(let j = 0; j < children.length; j++){
                   if(children[j].classList.contains("point")){
                     let pointId2 = children[j].getAttribute("id");
                     let ids2 = pointId2.split(" ");
                     if((ids2[1] == bodyschema[i][1]) && (ids2[0] == ids[0])){
-                      console.log(children[j].getAttribute("cx"));
+                      //console.log(children[j].getAttribute("cx"));
                       let xTemp = parseInt(children[j].getAttribute("cx"));
                       let yTemp = parseInt(children[j].getAttribute("cy"));
                       if((xTemp == "0") && (yTemp == "0")){
-                        console.log(xTemp, yTemp);
+                        /**console.log(xTemp, yTemp);
                         console.log(i);
-                        /**let btn = document.createElement("BUTTON");
-                        btn.innerHTML = i;
-                        btn.setAttribute("pointId", pointId);
-                        btn.setAttribute("onclick", "fireButton(this);")
-                        descr.appendChild(btn);**/
                         console.log(pointId);
-                        console.log(pointId2);
+                        console.log(pointId2);**/
 
                         let tempidp = "x" + ids2[1].toString();
                         let tempxp = document.getElementById(tempidp);
                         tempxp.setAttributeNS(null, "style", "fill:red;");
                         let tempid = "x" + i.toString();
-                        console.log(tempid);
+                        //console.log(tempid);
                         let tempx = document.getElementById(tempid);
-                        console.log(tempx);
+                        //console.log(tempx);
                         tempx.setAttributeNS(null, "style", "stroke: red;");
+                        highlightedModel.push(tempxp, tempx);
                       }
                     }
                   }
@@ -387,6 +391,52 @@
             }
           }
         }
+
+        function selectAddingPoint(evt){
+          if((evt.target.classList.contains("xp")) && (highlightedModel.includes(evt.target))){
+            selectedElement = evt.target;
+            let idRaw = selectedElement.getAttributeNS(null, "id");
+            let id = idRaw.split("x")[1];
+            console.log(id);
+            creationId = id;
+            creating = true;
+          }
+        }
+//Note to future self: You where here: Adding a new Point in schema works already, however the poses get skewed if you go to another picture and back.
+//Check the cache annotations function and look up the points in the body schema. The problem lies probably there.
+        function createPosePart(evt){
+          if(evt.target.getAttributeNS(null, "id") == "svg"){
+            console.log(evt.target);
+
+            let coord = getMousePos(evt);
+            let x2 = coord.x;
+            let y2 = coord.y;
+            let idp = creationPoseId + " " + creationId;
+
+            console.log(x2, y2);
+            let cPoint = document.getElementById(idp);
+            cPoint.setAttributeNS(null, "cx", x2);
+            cPoint.setAttributeNS(null, "cy", y2);
+
+            let idl;
+            let tempEl;
+            for(let i in bodyschema){
+              if((bodyschema[i][0] == creationId)&&(bodyschema[i][1] == creationId2)){
+                idl = creationPoseId + " " + i;
+                //document.getElementById(idl).remove();
+                console.log(idl);
+                createLine(x2, y2, creationCoordX, creationCoordY, idl);
+              }else if((bodyschema[i][1] == creationId)&&(bodyschema[i][0] == creationId2)){
+                idl = creationPoseId + " " + i;
+                //document.getElementById(idl).remove();
+                console.log(idl);
+                createLine(creationCoordX, creationCoordY, x2, y2, idl);
+              }
+              tempEl = i;
+            }
+          }
+        }
+
 
         //set coordinates of selected point back to default
         function undoChanges(evt){
@@ -609,6 +659,7 @@
           selectedElement = false;
         }
       }
+
       //currently not working a failed try to create points of specific bodyparts
       function fireButton(btn){
         console.log("fired Button event");
@@ -809,26 +860,42 @@
       //disables all modes (optional leave current mode on)
       function disableModes(current = ""){
         if(current == "resetMode"){
-          creationMode = false;
+          if(creationMode){
+            toggleCreationMode(false);
+          }
+          if(selectionMode){
+            toggleSelectionMode(false);
+          }
           deletionMode = false;
-          selectionMode = false;
         }else if(current == "deletionMode"){
-          creationMode = false;
+          if(creationMode){
+            toggleCreationMode(false);
+          }
+          if(selectionMode){
+            toggleSelectionMode(false);
+          }
           resetMode = false;
-          selectionMode = false;
         }else if(current == "creationMode"){
           resetMode = false;
           deletionMode = false;
-          selectionMode = false;
+          if(selectionMode){
+            toggleSelectionMode(false);
+          }
         }else if(current == "selectionMode"){
-          creationMode = false;
+          if(creationMode){
+            toggleCreationMode(false);
+          }
           resetMode = false;
           deletionMode = false;
         }else{
-          creationMode = false;
+          if(creationMode){
+            toggleCreationMode(false);
+          }
+          if(selectionMode){
+            toggleSelectionMode(false);
+          }
           resetMode = false;
           deletionMode = false;
-          selectionMode = false;
           let currentFileLink = document.getElementById(String(current_image_id) + "_link");
           currentFileLink.style.color = "";
         }
@@ -1016,7 +1083,7 @@
       }
 
       //creates a new svg point (circle) and sets all the attributes to the correct values
-      function createPoint(x, y, id){
+      function createPoint(x, y, id, nextId = null){
         let point = document.createElementNS(svgNS, "circle");
         let classes = color + " point";
         point.setAttributeNS(null,"cx", x);
@@ -1024,7 +1091,6 @@
         point.setAttributeNS(null, "r", "5");
         point.setAttributeNS(null, "class", classes);
         point.setAttributeNS(null,"id", id.toString());
-
         document.getElementById("svg").appendChild(point);
       }
 
@@ -1124,7 +1190,7 @@
           }
         }
 
-        console.log(unsavedChanges);
+        console.log("Unsaved changes: ", unsavedChanges);
       }
 
       //reset all poses to the values from the original json file
@@ -1222,18 +1288,13 @@
       function deleteDescr(){
         let descrsvg = document.getElementById("xsvg");
         for(let j = 0; j < descrsvg.childNodes.length; j++){
-          console.log(descrsvg.childNodes[j]);
-          console.log(descrsvg.childNodes[j].classList);
           if(descrsvg.childNodes[j].classList){
             descrsvg.childNodes[j].setAttributeNS(null, "style", "stroke: black;");
             descrsvg.childNodes[j].setAttributeNS(null, "style", "fill: black;");
           }
-          /**if(descrsvg.childNodes[j].classList.contains("lx")){
-            descrsvg.childNodes[j].setAttributeNS(null, "style", "stroke: black;");
-          }else if(descrsvg.childNodes[j].classList.contains("px")){
-            descrsvg.childNodes[j].setAttributeNS(null, "style", "fill: black;");
-          }**/
         }
+        highlightedModel = [];
+
       }
 
       //function for creating and downloading a working file with already made changes
