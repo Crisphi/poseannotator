@@ -2,14 +2,11 @@
 
 ## Currently working on
 
-* possibility of adding new points without violating bodyschema rules --> fix new issues
+* Settings menu
 
 ## To Do's
 
 * pretty user interface
-* Settings menu
-* moving whole pose
-
 
 * fix issues with nightly firefox browser / improve browser compatibility
 * Fix problems with slow loading of jquery
@@ -17,7 +14,8 @@
 * Tutorial
 
 * (support single-file json annotations)
-* (Show Point Labels)
+* Show Point Labels
+* moving whole pose
 
 ## Things to think about
 
@@ -42,9 +40,13 @@
   * Delete specific Point completely
   * Deletion of whole pose
 
+  ### Creation Mode
+  * Possibility of adding new points without violating bodyschema rules
+  * Create whole new pose
+
   ### Diverse
   * Key controls
   * Show file list in toolbar
   * Change color of annotations for better contrast
-  * Show wich files have been already checked
+  * Show wich files have already been checked
   * Selection of whole pose (deletion / movement)
