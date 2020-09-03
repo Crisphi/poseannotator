@@ -85,6 +85,10 @@
       ul{
         padding-left: 0;
       }
+
+      .dropdown-menu {
+        min-width: 370px !important;
+      }
     </style>
   </head>
   <body>
@@ -102,7 +106,7 @@
               <input class="dropdown-item" type="file" id="metadata" accept="application/json" multiple>
               <h5 class="dropdown-header">Images:</h5>
               <input class="dropdown-item" type="file" id="images" accept="image/*" multiple>
-              <a class="dropdown-item" id="importButton" href="javascript: handleFiles();"> Import Files</a>
+              <a class="dropdown-item text-primary" id="importButton" href="javascript: handleFiles();"> Import Files</a>
             </div>
           </li>
           <li class="nav-item dropdown">
@@ -111,7 +115,7 @@
             </a>
             <div class="dropdown-menu">
               <input class="dropdown-item" type="file" id="workingfile" accept="application/json">
-              <a class="dropdown-item" id="loadButton" href="javascript: handleWorkingFile();"> Load Project</a>
+              <a class="dropdown-item text-primary" id="loadButton" href="javascript: handleWorkingFile();"> Load Project</a>
             </div>
           </li>
           <li class="nav-item">
@@ -121,7 +125,7 @@
             <a class="nav-link" href="javascript: exportFinished();">Export</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Settings</a>
+            <a class="nav-link" data-toggle="modal" data-target="#settingsModal" href="javascript: toggleSettings();">Settings</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#">?</a>
@@ -132,7 +136,7 @@
         <div id="sidebar" class="col-md-3 col-lg-3">
           <div class="row">
             <div class="col">
-              <p> Checked: <span id = "checked">No</span></p>
+              <h5> Checked: <span id = "checked" class="label label-primary">No</span></h5>
             </div>
           </div>
           <div id="tools" class="row">
@@ -242,17 +246,74 @@
       <div id="footer" class="gridItem">
         Footer
       </div>
+      <!-- Modal -->
+      <div class="modal fade" id="settingsModal" role="dialog">
+        <div class="modal-dialog">
+
+          <!-- Modal content-->
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Settings</h4>
+              <button type="button" class="close" data-dismiss="modal" onclick="toggleSettings()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <form action="#">
+                <h4>Filepaths</h4>
+                <div class="form-group">
+                  <label for="metapath">Metadata filepath</label>
+                  <input type="text" class="form-control" id="metapath" placeholder="metadata/">
+                </div>
+                <div class="form-group">
+                  <label for="imagepath">Images filepath</label>
+                  <input type="text" class="form-control" id="imagepath" placeholder="img/">
+                </div>
+                <button type="button" class="btn btn-default" onclick="changePaths()">Save</button>
+                <!--<h4>Hotkeys and Colors</h4>
+                <div class="form-group">
+                  <label for="resetKey">Reset Mode</label>
+                  <input type="text" class="form-control" id="resetKey" placeholder="r" onkeydown="function f(){getKeyCode(event); setKeyCode('resetKey');}">
+                  <input type="color" id="resetColor" name="favcolor" value="#800080">
+                </div>
+                <div class="form-group">
+                  <label for="deleteKey">Delete Mode</label>
+                  <input type="text" class="form-control" id="deleteKey" placeholder="d">
+                  <input type="color" id="deleteColor" name="favcolor" value="#ff0000">
+                </div>
+                <div class="form-group">
+                  <label for="createKey">Creation Mode</label>
+                  <input type="text" class="form-control" id="createKey" placeholder="c">
+                  <input type="color" id="createColor" name="favcolor" value="#008000">
+                </div>
+                <div class="form-group">
+                  <label for="selectKey">SelectionMode</label>
+                  <input type="text" class="form-control" id="selectKey" placeholder="s">
+                  <input type="color" id="SelectColor" name="favcolor" value="#0000ff">
+                </div>
+                <div class="form-group">
+                  <label for="colorKey">Color change</label>
+                  <input type="text" class="form-control" id="colorKey" placeholder="arrow down">
+                </div>-->
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal" onclick="toggleSettings()">Close</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
     <script type="text/javascript">
     "use strict";
 
     //initializing variables
-      var IMG_FILEPATH = "img/";
-      var META_FILEPATH = "metadata/";
+      var img_filepath = "img/";
+      var meta_filepath = "metadata/";
       var single_meta_file = false;
-      var working_file = false;
+      var workingfile = false;
       var meta_file_list = {};
       var annotations;
+      var annotationsTemp;
       var image_file_list = {};
       var current_image_id;
       var current_image_source;
@@ -274,6 +335,7 @@
       var selectionMode = false;
       var creating = false;
       var creatingWhole = false;
+      var settings = false;
 
       var bodyparts = {};
 
@@ -334,30 +396,32 @@
 
       //various event listeners for tracking key and mouse navigation
       document.addEventListener("keydown", function(event) {
-        if(event.keyCode == 37) {
-          console.log("Left was pressed");
-          previousImage();
-        }
-        else if(event.keyCode == 39) {
-          console.log("Right was pressed");
-          nextImage();
-        }
-        else if(event.keyCode == 40) {
-          console.log("Down was pressed");
-          changeAnnoColor();
-        }
-        else if(event.keyCode == 68){
-          console.log("d was pressed");
-          toggleDeletionMode(!deletionMode);
-        }else if(event.keyCode == 67){
-          console.log("c was pressed");
-          toggleCreationMode(!creationMode);
-        }else if(event.keyCode == 82){
-          console.log("r was pressed");
-          toggleResetMode(!resetMode);
-        }else if(event.keyCode == 83){
-          console.log("s was pressed");
-          toggleSelectionMode(!selectionMode);
+        if(settings == false){
+          if(event.keyCode == 37) {
+            console.log("Left was pressed");
+            previousImage();
+          }
+          else if(event.keyCode == 39) {
+            console.log("Right was pressed");
+            nextImage();
+          }
+          else if(event.keyCode == 40) {
+            console.log("Down was pressed");
+            changeAnnoColor();
+          }
+          else if(event.keyCode == 68){
+            console.log("d was pressed");
+            toggleDeletionMode(!deletionMode);
+          }else if(event.keyCode == 67){
+            console.log("c was pressed");
+            toggleCreationMode(!creationMode);
+          }else if(event.keyCode == 82){
+            console.log("r was pressed");
+            toggleResetMode(!resetMode);
+          }else if(event.keyCode == 83){
+            console.log("s was pressed");
+            toggleSelectionMode(!selectionMode);
+          }
         }
       });
 
@@ -878,7 +942,7 @@
           if(imag.complete){
             let new_image = new Image();
             new_image.id = "image";
-            new_image.src = IMG_FILEPATH + current_image_source;
+            new_image.src = img_filepath + current_image_source;
             imag.parentNode.insertBefore(new_image, imag);
             imag.parentNode.removeChild(imag);
           }
@@ -932,11 +996,28 @@
               displayFileList();
               loadImage();
               loadWorkingMeta();
+
+              //get name of json file through the name of the image file
+              let id = current_image_source.split(".")[0];
+              //create a new regex pattern
+              let patt = new RegExp(id + "_");
+
+              //console.log(id);
+              //search in loaded meta files for the correct file via file name and save file in meta_id
+              for(let i = 0; i < meta_file_list.length; i++){
+                let d = meta_file_list[i];
+                if(patt.test(d.name)){
+                  //console.log(d);
+                  meta_id = d;
+                }
+              }
+
             }){
             //console.log(callback);
             let lines = t.target.result;
             let a = JSON.parse(lines);
             working_data = $.extend(working_data,a);
+
             callback();
           }
         }
@@ -1418,6 +1499,7 @@
                 //save new metadata in the exportFile array
                 exportFile[i] = Object.assign({}, unsavedChanges[j]);
                 exportFile[i]["image_source"] = unsavedChanges[j]["image_source"].name;
+                console.log(exportFile[i]["image_source"]);
                 exportFile[i]["meta_source"] = unsavedChanges[j]["meta_source"].name;
                 exportFile[i]["checked"] = true;
               }
@@ -1438,13 +1520,18 @@
                   imageTemp = d;
                 }
               }
-              //wait for the results of the file reading process
-              let result = await readFileAsync(meta_file_list[i]);
-              //parse current metadata file as json
-              let a = JSON.parse(result);
-              var annotationsTemp = $.extend(annotationsTemp,a);
-              console.log(annotationsTemp);
-              //save modulated metadata in exportFile array
+              if(workingfile){
+                annotationsTemp = working_data[i];
+                console.log(annotationsTemp);
+              }else{
+                //wait for the results of the file reading process
+                let result = await readFileAsync(meta_file_list[i]);
+                //parse current metadata file as json
+                let a = JSON.parse(result);
+                annotationsTemp = $.extend(annotationsTemp,a);
+                console.log(annotationsTemp);
+                //save modulated metadata in exportFile array
+              }
               exportFile[i] = Object.assign({},annotationsTemp);
               exportFile[i]["image_source"] = imageTemp.name;
               exportFile[i]["meta_source"] = meta_name;
@@ -1482,23 +1569,33 @@
             for(let j in unsavedChanges){
               if(i == j){
                 found = true;
-
-                let result = await readFileAsync(meta_file_list[i]);
-                //parse current metadata file as json
-                let a = JSON.parse(result);
-                //overwrite metadata with unsavedChanges
+                let a;
+                if(workingfile){
+                  a = {"people": []};
+                  a["people"] = Object.assign({}, working_data[i].people);
+                }else{
+                  let result = await readFileAsync(meta_file_list[i]);
+                  //parse current metadata file as json
+                  a = JSON.parse(result);
+                  //overwrite metadata with unsavedChanges
+                }
                 a["people"] = unsavedChanges[j]["people"];
-
                 exportFile[i] = Object.assign({}, a);
               }
             }
             //current image has no changes yet
             if(found == false){
-              //wait for the results of the file reading process
-              let result = await readFileAsync(meta_file_list[i]);
-              //parse current metadata file as json
-              let a = JSON.parse(result);
-              //save metadata in exportFile array
+              let a;
+              if(workingfile){
+                a = {"people": []};
+                a["people"] = Object.assign({}, working_data[i].people);
+              }else{
+                //wait for the results of the file reading process
+                let result = await readFileAsync(meta_file_list[i]);
+                //parse current metadata file as json
+                a = JSON.parse(result);
+                //save metadata in exportFile array
+              }
               exportFile[i] = Object.assign({},a);
             }
             found = false;
@@ -1609,6 +1706,19 @@
           }
           //disable deletion button
           document.getElementById("poseDelButton").disabled = true;
+        }
+      }
+
+      function changePaths(){
+        img_filepath = document.getElementById("imagepath").value;
+        meta_filepath = document.getElementById("metapath").value;
+      }
+
+      function toggleSettings(){
+        if (settings){
+          settings = false;
+        }else{
+          settings = true;
         }
       }
     </script>
