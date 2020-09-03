@@ -125,7 +125,7 @@
             <a class="nav-link" href="javascript: exportFinished();">Export</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" data-toggle="modal" data-target="#settingsModal" href="javascript: toggleSettings();">Settings</a>
+            <a class="nav-link" data-toggle="modal" data-target="#settingsModal" onclick="javascript: toggleSettings();" style="cursor: pointer;">Settings</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#">?</a>
@@ -229,7 +229,7 @@
           <div id="files" class="row">
             <div class="col">
               <p>Images:</p>
-              <div id="filescroll">
+              <div id="filescroll" style="overflow-x: hidden;">
                 <ul id="fileview"></ul>
               </div>
             </div>
@@ -267,7 +267,7 @@
                   <label for="imagepath">Images filepath</label>
                   <input type="text" class="form-control" id="imagepath" placeholder="img/">
                 </div>
-                <button type="button" class="btn btn-default" onclick="changePaths()">Save</button>
+                <button type="button" class="btn btn-default" onclick="changePaths();">Save</button>
                 <!--<h4>Hotkeys and Colors</h4>
                 <div class="form-group">
                   <label for="resetKey">Reset Mode</label>
@@ -543,6 +543,7 @@
             let cPoint = document.getElementById(idp);
             cPoint.setAttributeNS(null, "cx", x2);
             cPoint.setAttributeNS(null, "cy", y2);
+            cPoint.setAttributeNS(null, "style", "visibility: visible;");
 
             //create line
             let idl;
@@ -615,6 +616,7 @@
               //sets coordinates of point to 0
               selectedElement.setAttributeNS(null, "cx", 0);
               selectedElement.setAttributeNS(null, "cy", 0);
+              selectedElement.setAttributeNS(null, "style", "visibility: hidden;");
 
               //get all lines that connect to point
               let lineIds = getLineIds();
@@ -1263,6 +1265,10 @@
           //console.log(strx + " " + stry);
           let idtemp = counter.toString() + " " + id.toString();
           createPoint(strx, stry, idtemp);
+          if((x == 0) && (y == 0)){
+            let tempPoint = document.getElementById(idtemp);
+            tempPoint.setAttributeNS(null, "style", "visibility: hidden;");
+          }
         }
       }
 
@@ -1710,15 +1716,27 @@
       }
 
       function changePaths(){
-        img_filepath = document.getElementById("imagepath").value;
-        meta_filepath = document.getElementById("metapath").value;
+        if(document.getElementById("imagepath").value){
+          let inputElement = document.getElementById("imagepath");
+          img_filepath = inputElement.value;
+          inputElement.placeholder = img_filepath;
+        }
+        console.log(img_filepath);
+        if(document.getElementById("metapath").value){
+          let inputElement = document.getElementById("metapath");
+          meta_filepath = inputElement.value;
+          inputElement.placeholder = meta_filepath;
+        }
+        console.log(meta_filepath);
       }
 
       function toggleSettings(){
         if (settings){
           settings = false;
+          console.log("Settings open");
         }else{
           settings = true;
+          console.log("Settings closed");
         }
       }
     </script>

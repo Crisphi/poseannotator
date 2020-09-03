@@ -3,6 +3,7 @@
 ## Currently working on
 
 * Settings menu
+* UI
 
 ## To Do's
 
