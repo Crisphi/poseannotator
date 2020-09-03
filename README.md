@@ -3,11 +3,11 @@
 ## Currently working on
 
 * Settings menu
-* UI
+* pretty user interface
 
 ## To Do's
 
-* pretty user interface
+
 
 * fix issues with nightly firefox browser / improve browser compatibility
 * Fix problems with slow loading of jquery
@@ -44,6 +44,9 @@
   ### Creation Mode
   * Possibility of adding new points without violating bodyschema rules
   * Create whole new pose
+
+  ### Settings
+  * Possibility to change filepaths
 
   ### Diverse
   * Key controls
