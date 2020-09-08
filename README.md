@@ -1,13 +1,9 @@
 # poseannotator
 
 ## Currently working on
-
-* Settings menu
 * pretty user interface
 
 ## To Do's
-
-
 
 * fix issues with nightly firefox browser / improve browser compatibility
 * Fix problems with slow loading of jquery
@@ -54,3 +50,4 @@
   * Change color of annotations for better contrast
   * Show wich files have already been checked
   * Selection of whole pose (deletion / movement)
+  * Table of shortcuts

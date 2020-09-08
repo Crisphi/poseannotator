@@ -10,29 +10,6 @@
     <!-- import jszip.js for zipping-->
     <script type="text/javascript" src="https://stuk.github.io/jszip/dist/jszip.min.js"></script>
     <style>
-      /**div {border-style: dotted;}**/
-      /**body {display: grid;}
-      #header{
-        grid-column: 1/span 3;
-        grid-row: 1/ span 2;
-      }
-      #sidebar{
-        grid-column: 1;
-        grid-row: 2/span 7;
-      }
-      #workspace{
-        grid-column: 2/span 3;
-        grid-row: 2/span 5;
-        grid-template-columns: max-content;
-      }
-
-      #footer{
-        grid-column: 1/span 3;
-        grid-row: 7;
-      }
-
-      .gridItem{display:grid;}**/
-
       #img-svg-wrap{
         position: relative;
         display: inline-block;
@@ -164,6 +141,7 @@
                   </div>
                   <div class="row">
                     <div class="col">
+                      <!-- this is the pose model you need for creating new poses and pose parts-->
                       <svg id="xsvg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="225 140 180 503.5" width="150px" onload="draggable(evt);">
                         <line x1="304.844" y1="158.085" x2="286.6189880371094" y2="146.37899780273438" class="xl black" id="xhead1" ></line>
                         <line x1="304.844" y1="158.085" x2="321.30999755859375" y2="146.09800720214844" class="xl" id="xhead2"></line>
@@ -234,17 +212,72 @@
               </div>
             </div>
           </div>
+          <div class="row">
+            <div class="col-md-6 col-lg-6">
+              <button  class="btn-block btn-dark py-1 mt-4" data-toggle="collapse" data-target="#shortcuts">Show/Hide Shortcuts</button>
+            </div>
+          </div>
         </div>
         <div id="workspace" class="col">
-          <div id="img-svg-wrap">
-            <img x= 0 y= 0 id="image" href="" alt="current Picture">
-            <svg id="svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="draggable(evt)">
-            </svg>
+          <div class="row">
+            <div id="img-svg-wrap">
+              <img x= 0 y= 0 id="image" href="" alt="current Picture">
+              <svg id="svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="draggable(evt)">
+              </svg>
+            </div>
           </div>
         </div>
       </div>
-      <div id="footer" class="gridItem">
-        Footer
+      <div class="row">
+        <div class="col">
+          <div class="row">
+            <div class="col-md-3 col-lg-3"></div>
+            <div id="shortcuts" class="col container mx-auto m-2 collapse show">
+              <table class="table table-dark table-striped">
+                <thead>
+                  <tr>
+                    <th>Mode</th>
+                    <th>Key</th>
+                    <th>Color</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Normal</td>
+                    <td>none</td>
+                    <td>black/orange</td>
+                  </tr>
+                  <tr>
+                    <td>Reset</td>
+                    <td>r</td>
+                    <td>purple</td>
+                  </tr>
+                  <tr>
+                    <td>Delete</td>
+                    <td>d</td>
+                    <td>red</td>
+                  </tr>
+                  <tr>
+                    <td>Create</td>
+                    <td>c</td>
+                    <td>green</td>
+                  </tr>
+                  <tr>
+                    <td>Select</td>
+                    <td>s</td>
+                    <td>blue</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="col-md-3 col-lg-3"></div>
+          </div>
+          <div class="row">
+            <div class="col jumbotron mb-0">
+              <span>Test</span>
+            </div>
+          </div>
+        </div>
       </div>
       <!-- Modal -->
       <div class="modal fade" id="settingsModal" role="dialog">
@@ -306,7 +339,7 @@
     <script type="text/javascript">
     "use strict";
 
-    //initializing variables
+    //initializing global variables
       var img_filepath = "img/";
       var meta_filepath = "metadata/";
       var single_meta_file = false;
@@ -951,6 +984,7 @@
         }
       }
 
+      //function for initializing reading and and visualizing the metadata given by a poseannotator working file
       function handleWorkingFile(){
         workingfile = true;
         single_meta_file = false;
@@ -967,7 +1001,7 @@
             readWorkingFile();
           }
         }
-
+        //parse metadata file and save data in variables
         function readWorkingFile(){
           current_image_id = 0;
           annotations = {};
@@ -1131,6 +1165,7 @@
         }
       }
 
+      //function for loading specific image out of filelist with annotations
       function specificImage(id){
         disableModes();
         //deleteDescr();
@@ -1453,6 +1488,7 @@
         }
       }
 
+      //enables/disables selection mode and sets color of poses to a different value for recognition
       function toggleSelectionMode(on){
         disableModes("selectionMode");
         let svg = document.getElementById("svg");
@@ -1474,7 +1510,7 @@
         }
       }
 
-      //deletes additional buttons for distinct bodyparts in the tool area added creation mode
+      //resets highlights for distinct bodyparts in the pose model added in creation mode
       function deleteDescr(){
         let descrsvg = document.getElementById("xsvg");
         for(let j = 0; j < descrsvg.childNodes.length; j++){
@@ -1715,8 +1751,10 @@
         }
       }
 
+      //function for changing file paths through the settings menu
       function changePaths(){
         if(document.getElementById("imagepath").value){
+          //get input value and overwrite path and placeholder in settings
           let inputElement = document.getElementById("imagepath");
           img_filepath = inputElement.value;
           inputElement.placeholder = img_filepath;
@@ -1730,6 +1768,7 @@
         console.log(meta_filepath);
       }
 
+      //function for managing the settings menu and avoid unwanted input in main screen
       function toggleSettings(){
         if (settings){
           settings = false;
