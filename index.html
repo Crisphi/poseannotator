@@ -9,6 +9,11 @@
     <script async="" src="https://cdn.rawgit.com/eligrey/FileSaver.js/5ed507ef8aa53d8ecfea96d96bc7214cd2476fd2/FileSaver.min.js"> </script>
     <!-- import jszip.js for zipping-->
     <script type="text/javascript" src="https://stuk.github.io/jszip/dist/jszip.min.js"></script>
+    <script>
+      $(window).load(function () {
+            $(".loader").fadeOut("slow");
+          });
+    </script>
     <style>
       #img-svg-wrap{
         position: relative;
@@ -74,13 +79,41 @@
         position: fixed;
         bottom: 0;
       }
+
+      #loadingDiv{
+        position: absolute;
+        top:20%;
+        left:20%;
+        z-index: 99;
+        width: 400px;
+        height: 300px;
+        display: flex;
+        justify-content: center;
+      }
+
+      #spinner{
+        position: absolute;
+        top: 30%;
+      }
+      #loadingText{
+        position: absolute;
+        top:40%;
+      }
     </style>
   </head>
   <body>
     <div id="mainContainer" class="container-fluid">
+
+      <div id="loadingDiv" class="m-auto rounded-lg border border-primary bg-light span6 offset3 loader">
+        <div id="spinner" class="spinner-border mx-auto" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+        <span id="loadingText">Setting up Page...</span>
+      </div>
+
       <h1 class="display-5">Pose Annotator</h1>
       <nav class="navbar navbar-expand-sm bg-dark navbar-dark" id="navbar" class="row">
-        <span class="navbar-brand">Logo</span>
+        <!--<span class="navbar-brand">Logo</span>-->
         <ul class="navbar-nav">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
@@ -113,15 +146,15 @@
             <a class="nav-link" data-toggle="modal" data-target="#settingsModal" onclick="javascript: toggleSettings();" style="cursor: pointer;">Settings</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">?</a>
+            <a class="nav-link" data-toggle="modal" data-target="#helpModal" style="cursor: pointer;">?</a>
           </li>
         </ul>
       </nav>
       <div id="main" class="row">
         <div id="sidebar" class="col-md-3 col-lg-3">
-          <div class="row">
+          <div class="row mt-2">
             <div class="col">
-              <h5> Checked: <span id = "checked" class="label label-primary">No</span></h5>
+              <h5> Checked: <span id = "checked" class="badge badge-secondary">No</span></h5>
             </div>
           </div>
           <div id="tools" class="row">
@@ -214,7 +247,7 @@
           </div>
           <div id="files" class="row">
             <div class="col">
-              <p>Images:</p>
+              <h5>Images:</h5>
               <div id="filescroll" style="overflow-x: hidden;">
                 <ul id="fileview"></ul>
               </div>
@@ -227,9 +260,9 @@
           </div>
         </div>
         <div id="workspace" class="col">
-          <div class="row">
+          <div class="row mt-3">
             <div id="img-svg-wrap">
-              <img x= 0 y= 0 id="image" href="" alt="current Picture">
+              <img x= 0 y= 0 id="image" href="" alt="Import or Load Files to Start..">
               <svg id="svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="draggable(evt)">
               </svg>
             </div>
@@ -240,7 +273,7 @@
         <div class="col">
           <div class="row">
             <div class="col-md-3 col-lg-3"></div>
-            <div id="shortcuts" class="col container mx-auto mt-2 collapse show">
+            <div id="shortcuts" class="col container mx-auto mt-2 collapse">
               <table class="table table-dark table-striped">
                 <thead>
                   <tr>
@@ -282,7 +315,7 @@
           </div>
         </div>
       </div>
-      <!-- Modal -->
+      <!-- Settings Modal  -->
       <div class="modal fade" id="settingsModal" role="dialog">
         <div class="modal-dialog">
 
@@ -303,7 +336,7 @@
                   <label for="imagepath">Images filepath</label>
                   <input type="text" class="form-control" id="imagepath" placeholder="img/">
                 </div>
-                <button type="button" class="btn btn-default" onclick="changePaths();">Save</button>
+                <button type="button" class="btn btn-default text-primary" onclick="changePaths();">Save</button>
                 <!--<h4>Hotkeys and Colors</h4>
                 <div class="form-group">
                   <label for="resetKey">Reset Mode</label>
@@ -338,13 +371,35 @@
 
         </div>
       </div>
+      <!-- Help Modal -->
+      <div class="modal fade" id="helpModal" role="dialog">
+        <div class="modal-dialog">
+
+          <!-- Modal content-->
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Settings</h4>
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+              <p>Here will be a tutorial and some contact information for further questions</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
     <div id="footerContainer" class="container-fluid">
       <div class="row">
         <div class="col mb-0 p-0">
           <footer class="page-footer font-small bg-dark">
-            <div class="footer-copyright text-center py-3">© 2020 Copyright:
-              <a href="#"> Cristian Ortega Singer IzDigital FAU Erlangen-Nürnberg</a>
+            <div class="footer-copyright text-center py-3">
+              <a href="https://github.com/Crisphi/poseannotator" target="_blank"><i class='fab fa-github' style='font-size:24px'></i></a>
+              <span class="text-secondary">© 2020 Copyright:</span>
+              <a href="https://www.izdigital.fau.de/" target="_blank"> Cristian Ortega Singer IzDigital FAU Erlangen-Nürnberg</a>
             </div>
           </footer>
         </div>
@@ -443,7 +498,7 @@
 
       //various event listeners for tracking key and mouse navigation
       document.addEventListener("keydown", function(event) {
-        if(settings == false){
+        if((settings == false) &&(annotations)){
           if(event.keyCode == 37) {
             console.log("Left was pressed");
             previousImage();
@@ -1539,146 +1594,154 @@
 
       //function for creating and downloading a working file with already made changes
       async function exportUnfinished(){
-        //save changes on current picture
-        cacheAnnotations();
+        if(!annotations){
+          alert("You have to import files first!");
+        }else{
+          //save changes on current picture
+          cacheAnnotations();
 
-        let exportFile = [];
-        let found = false;
+          let exportFile = [];
+          let found = false;
 
-        //checks if there are unsaved Changes
-        if(unsavedChanges[0]){
-          for(let i = 0; i < meta_file_list.length; i++){
-            //checks if there are unsaved Changes in the current metadata-file
-            for(let j in unsavedChanges){
-              if(i == j){
-                found = true;
-                //save new metadata in the exportFile array
-                exportFile[i] = Object.assign({}, unsavedChanges[j]);
-                exportFile[i]["image_source"] = unsavedChanges[j]["image_source"].name;
-                console.log(exportFile[i]["image_source"]);
-                exportFile[i]["meta_source"] = unsavedChanges[j]["meta_source"].name;
-                exportFile[i]["checked"] = true;
-              }
-            }
-            //current image has no changes yet
-            if(found == false){
-              let meta_name = meta_file_list[i].name;
-              let id = meta_name.split("_")[0];
-
-              //search for the image that belongs to the metadata
-              let patt = new RegExp(id + ".");
-              let imageTemp;
-
-              for(let k = 0; k < image_file_list.length; k++){
-                let d = image_file_list[k];
-                if(patt.test(d.name)){
-                  console.log(d);
-                  imageTemp = d;
+          //checks if there are unsaved Changes
+          if(unsavedChanges[0]){
+            for(let i = 0; i < meta_file_list.length; i++){
+              //checks if there are unsaved Changes in the current metadata-file
+              for(let j in unsavedChanges){
+                if(i == j){
+                  found = true;
+                  //save new metadata in the exportFile array
+                  exportFile[i] = Object.assign({}, unsavedChanges[j]);
+                  exportFile[i]["image_source"] = unsavedChanges[j]["image_source"].name;
+                  console.log(exportFile[i]["image_source"]);
+                  exportFile[i]["meta_source"] = unsavedChanges[j]["meta_source"].name;
+                  exportFile[i]["checked"] = true;
                 }
               }
-              if(workingfile){
-                annotationsTemp = working_data[i];
-                console.log(annotationsTemp);
-              }else{
-                //wait for the results of the file reading process
-                let result = await readFileAsync(meta_file_list[i]);
-                //parse current metadata file as json
-                let a = JSON.parse(result);
-                annotationsTemp = $.extend(annotationsTemp,a);
-                console.log(annotationsTemp);
-                //save modulated metadata in exportFile array
+              //current image has no changes yet
+              if(found == false){
+                let meta_name = meta_file_list[i].name;
+                let id = meta_name.split("_")[0];
+
+                //search for the image that belongs to the metadata
+                let patt = new RegExp(id + ".");
+                let imageTemp;
+
+                for(let k = 0; k < image_file_list.length; k++){
+                  let d = image_file_list[k];
+                  if(patt.test(d.name)){
+                    console.log(d);
+                    imageTemp = d;
+                  }
+                }
+                if(workingfile){
+                  annotationsTemp = working_data[i];
+                  console.log(annotationsTemp);
+                }else{
+                  //wait for the results of the file reading process
+                  let result = await readFileAsync(meta_file_list[i]);
+                  //parse current metadata file as json
+                  let a = JSON.parse(result);
+                  annotationsTemp = $.extend(annotationsTemp,a);
+                  console.log(annotationsTemp);
+                  //save modulated metadata in exportFile array
+                }
+                exportFile[i] = Object.assign({},annotationsTemp);
+                exportFile[i]["image_source"] = imageTemp.name;
+                exportFile[i]["meta_source"] = meta_name;
+                exportFile[i]["checked"] = false;
               }
-              exportFile[i] = Object.assign({},annotationsTemp);
-              exportFile[i]["image_source"] = imageTemp.name;
-              exportFile[i]["meta_source"] = meta_name;
-              exportFile[i]["checked"] = false;
+              found = false;
             }
-            found = false;
+            console.log("Export");
+            console.log(exportFile);
+
+            //set data for download file
+            let filename = "poseannotatorFile.json";
+            let text = JSON.stringify(exportFile);
+
+            //start download
+            download(filename, text);
+
+          }else{
+            alert("No Changes made!");
           }
-          console.log("Export");
-          console.log(exportFile);
-
-          //set data for download file
-          let filename = "poseannotatorFile.json";
-          let text = JSON.stringify(exportFile);
-
-          //start download
-          download(filename, text);
-
-        }else{
-          alert("No Changes made!");
         }
       }
 
       //function for creating and downloading a zip file with all updated json files
       async function exportFinished(){
-        //save changes on current picture
-        cacheAnnotations();
+        if(!annotations){
+          alert("You have to import files first!");
+        }else{
+          //save changes on current picture
+          cacheAnnotations();
 
-        let exportFile = [];
-        let found = false;
+          let exportFile = [];
+          let found = false;
 
-        //checks if there are unsaved Changes
-        if(unsavedChanges[0]){
-          for(let i = 0; i < meta_file_list.length; i++){
-            //checks if there are unsaved Changes in the current metadata-file
-            for(let j in unsavedChanges){
-              if(i == j){
-                found = true;
+          //checks if there are unsaved Changes
+          if(unsavedChanges[0]){
+            for(let i = 0; i < meta_file_list.length; i++){
+              //checks if there are unsaved Changes in the current metadata-file
+              for(let j in unsavedChanges){
+                if(i == j){
+                  found = true;
+                  let a;
+                  if(workingfile){
+                    a = {"people": []};
+                    a["people"] = Object.assign({}, working_data[i].people);
+                  }else{
+                    let result = await readFileAsync(meta_file_list[i]);
+                    //parse current metadata file as json
+                    a = JSON.parse(result);
+                    //overwrite metadata with unsavedChanges
+                  }
+                  a["people"] = unsavedChanges[j]["people"];
+                  exportFile[i] = Object.assign({}, a);
+                }
+              }
+              //current image has no changes yet
+              if(found == false){
                 let a;
                 if(workingfile){
                   a = {"people": []};
                   a["people"] = Object.assign({}, working_data[i].people);
                 }else{
+                  //wait for the results of the file reading process
                   let result = await readFileAsync(meta_file_list[i]);
                   //parse current metadata file as json
                   a = JSON.parse(result);
-                  //overwrite metadata with unsavedChanges
+                  //save metadata in exportFile array
                 }
-                a["people"] = unsavedChanges[j]["people"];
-                exportFile[i] = Object.assign({}, a);
+                exportFile[i] = Object.assign({},a);
               }
+              found = false;
             }
-            //current image has no changes yet
-            if(found == false){
-              let a;
-              if(workingfile){
-                a = {"people": []};
-                a["people"] = Object.assign({}, working_data[i].people);
-              }else{
-                //wait for the results of the file reading process
-                let result = await readFileAsync(meta_file_list[i]);
-                //parse current metadata file as json
-                a = JSON.parse(result);
-                //save metadata in exportFile array
-              }
-              exportFile[i] = Object.assign({},a);
+            console.log("Export");
+            console.log(exportFile);
+
+            //create zip element
+            let zip = new JSZip();
+
+            //add all metadata files to zip element
+            for(let i = 0; i < exportFile.length; i++){
+              let text = JSON.stringify(exportFile[i]);
+              let filename = meta_file_list[i]["name"];
+              zip.file(filename, text);
             }
-            found = false;
+
+            //generate zip file and download it
+            zip.generateAsync({type:"blob"}).then(function(blob){
+              console.log(zip);
+              saveAs(blob, "pa-export-files.zip");
+            }, function (err){
+              console.log("Error in zipping");
+            });
+
+          }else{
+            alert("No Changes made!");
           }
-          console.log("Export");
-          console.log(exportFile);
-
-          //create zip element
-          let zip = new JSZip();
-
-          //add all metadata files to zip element
-          for(let i = 0; i < exportFile.length; i++){
-            let text = JSON.stringify(exportFile[i]);
-            let filename = meta_file_list[i]["name"];
-            zip.file(filename, text);
-          }
-
-          //generate zip file and download it
-          zip.generateAsync({type:"blob"}).then(function(blob){
-            console.log(zip);
-            saveAs(blob, "pa-export-files.zip");
-          }, function (err){
-            console.log("Error in zipping");
-          });
-
-        }else{
-          alert("No Changes made!");
         }
       }
 
@@ -1794,15 +1857,17 @@
       }
     </script>
     <!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
 
-<!-- jQuery library -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-<!-- Popper JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <!-- Popper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 
-<!-- Latest compiled JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
+    <script src='https://kit.fontawesome.com/a076d05399.js'></script>
   </body>
 </html>
