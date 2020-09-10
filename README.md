@@ -6,9 +6,9 @@
 
 ## To Do's
 
-* fix issues with nightly firefox browser / improve browser compatibility
+* fix issues with nightly Firefox browser / improve browser compatibility
 
-* (support single-file json annotations)
+* (support single file json annotations)
 * (moving whole pose)
 
 ## Things to think about
@@ -30,21 +30,21 @@
 
   ### Deletion Mode
   * Undo recent changes
-  * Undo all made changes on specific imag
+  * Undo all made changes on specific image
   * Delete specific Point completely
   * Deletion of whole pose
 
   ### Creation Mode
-  * Possibility of adding new points without violating bodyschema rules
+  * Possibility of adding new points without violating body schema rules
   * Create whole new pose
 
   ### Settings
-  * Possibility to change filepaths
+  * Possibility to change file paths
 
   ### Diverse
   * Key controls
   * Show file list in toolbar
   * Change color of annotations for better contrast
-  * Show wich files have already been checked
+  * Show which files have already been checked
   * Selection of whole pose (deletion / movement)
   * Table of shortcuts
