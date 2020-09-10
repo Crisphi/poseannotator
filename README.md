@@ -1,18 +1,15 @@
 # poseannotator
 
 ## Currently working on
-* pretty user interface
+
+* Tutorial
 
 ## To Do's
 
 * fix issues with nightly firefox browser / improve browser compatibility
-* Fix problems with slow loading of jquery
-
-* Tutorial
 
 * (support single-file json annotations)
-* Show Point Labels
-* moving whole pose
+* (moving whole pose)
 
 ## Things to think about
 
