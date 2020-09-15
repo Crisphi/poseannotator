@@ -116,7 +116,7 @@
         <!--<span class="navbar-brand">Logo</span>-->
         <ul class="navbar-nav">
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbardropI" data-toggle="dropdown">
               Import
             </a>
             <div class="dropdown-menu">
@@ -128,7 +128,7 @@
             </div>
           </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbardropL" data-toggle="dropdown">
               Load
             </a>
             <div class="dropdown-menu">
@@ -145,8 +145,14 @@
           <li class="nav-item">
             <a class="nav-link" data-toggle="modal" data-target="#settingsModal" onclick="javascript: toggleSettings();" style="cursor: pointer;">Settings</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" data-toggle="modal" data-target="#helpModal" style="cursor: pointer;">?</a>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbardropH" data-toggle="dropdown">
+              ?
+            </a>
+            <div class="dropdown-menu">
+              <a class="dropdown-item text-primary" id="loadButton" href="https://docs.google.com/document/d/1t2OCi7HAAHCphB0O1CmdNRlzamoxoq1w4XdWJdLQ6aI/edit?usp=sharing" target="_blank"> Open User Manual <i class='fas fa-external-link-alt' style='font-size:12px'></i></a>
+              <a class="dropdown-item text-primary" id="loadButton" href="mailto:cris.ortega@fau.de"> Contact Developer <i class='fas fa-external-link-alt' style='font-size:12px'></i></a>
+            </div>
           </li>
         </ul>
       </nav>
@@ -376,10 +382,9 @@
         </div>
       </div>
       <!-- Help Modal -->
-      <div class="modal fade" id="helpModal" role="dialog">
+      <!--<div class="modal fade" id="helpModal" role="dialog">
         <div class="modal-dialog">
 
-          <!-- Modal content-->
           <div class="modal-content">
             <div class="modal-header">
               <h4 class="modal-title">Settings</h4>
@@ -394,7 +399,7 @@
           </div>
 
         </div>
-      </div>
+      </div>-->
     </div>
     <div id="footerContainer" class="container-fluid">
       <div class="row">
