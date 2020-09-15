@@ -165,8 +165,12 @@
               <button type="button" class="btn btn-dark my-1" id="deleteButton" onclick="toggleDeletionMode(!deletionMode);">Deletion Mode</button>
               <button type="button" class="btn btn-dark my-1" id="selectButton" onclick="toggleSelectionMode(!selectionMode);">Selection Mode</button>
               <div class="btn-group">
-                <button type="button" class="btn btn-dark my-1" id="lastPic" onclick="previousImage();">Prev</button>
-                <button type="button" class="btn btn-dark my-1" id="nextPic" onclick="nextImage();">Next</button>
+                <button type="button" class="btn btn-dark my-1" id="lastPic" onclick="previousImage();">
+                  <i class='fas fa-arrow-left' style='font-size:26px'></i>
+                </button>
+                <button type="button" class="btn btn-dark my-1" id="nextPic" onclick="nextImage();">
+                  <i class='fas fa-arrow-right' style='font-size:26px'></i>
+                </button>
               </div>
             </div>
             <div class="col">
