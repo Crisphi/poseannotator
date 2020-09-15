@@ -508,7 +508,7 @@
       //various event listeners for tracking key and mouse navigation
       document.addEventListener("keydown", function(event) {
         if((settings == false) &&(annotations)){
-          if(event.keyCode == 37) {
+          if(event.keyCode == 37){
             console.log("Left was pressed");
             previousImage();
           }
@@ -516,7 +516,7 @@
             console.log("Right was pressed");
             nextImage();
           }
-          else if(event.keyCode == 40) {
+          else if((event.keyCode == 40) &&(!deletionMode) &&(!creationMode)&&(!resetMode)&&(!selectionMode)){
             console.log("Down was pressed");
             changeAnnoColor();
           }
