@@ -18,8 +18,6 @@ For further information have a look at the [user manual](https://docs.google.com
 
 ## Currently working on
 
-* Tutorial
-
 ## To Do's
 
 * fix issues with nightly Firefox browser / improve browser compatibility
