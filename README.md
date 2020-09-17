@@ -1,4 +1,20 @@
-# poseannotator
+# Pose Annotator
+
+Pose Annotator allows you to manually improve 2D poses from OpenPose results.
+
+Specifically, you can import images and the corresponding poses recognized by OpenPose as JSON files
+and then modify them by click and drag, as well as add and delete parts of the poses and whole poses.
+
+In addition to a work file, which records whether an image and its annotations have already been checked,
+the improved poses can be exported as JSON files in OpenPose format.
+
+As a HTML one pager you can use the tool without installation via your browser.
+At the moment the app is optimized for standard Firefox.
+
+The app is available [online](https://crisphi.github.io/poseannotator/ "Pose Annotator"), however, I would highly recommend
+downloading the tool, as the app is designed for offline use and a sample data set is included.
+
+For further information have a look at the [user manual](https://docs.google.com/document/d/1t2OCi7HAAHCphB0O1CmdNRlzamoxoq1w4XdWJdLQ6aI/edit?usp=sharing "User manual") and feel free to contact me.
 
 ## Currently working on
 
